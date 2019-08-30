@@ -74,6 +74,8 @@ bob = Series(np.arange(3,30,3))
 (bob>10).any() # bool
 (bob>2).all() # bool
 (bob>15).sum()
+bob.isnull().sum()
+
 
 # rolling window
 s = Series(np.random.randint(1,200,size=1000))
@@ -116,6 +118,12 @@ NQ100=pd.read_csv("http://www.nasdaq.com/quotes/nasdaq-100-stocks.aspx?render=do
 
 calls_df, = pd.read_html("http://apps.sandiego.gov/sdfiredispatch/", header=0, parse_dates=["Call Date"])
 
+#errors='coerce' means that we force the conversation.
+#Values that can not be converted are set to NaN ("Not a Number")
+data['educ'] = pd.to_numeric(data['educ'],errors='coerce') 
+
+
+
 
 # Analysing DF --------------------------------------------------------------------------------
 type(NQ100['lastsale']), SPY_TICK.dtypes
@@ -155,6 +163,9 @@ NQ100.at['FB','Last']
 
 # delete columns
 UC.drop(UC.columns[[3,4]],axis=1)
+interesting_collums = ['loyalty', 'satisfaction','educ']      
+reduced = data[interesting_collums]
+
 
 import itertools
 datecols = ['year', 'month', 'day']
