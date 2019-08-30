@@ -161,6 +161,30 @@ temp_df['Hurra'][1:3]
 temp_df.iloc[1]
 NQ100.at['FB','Last']
 
+df[df["gender"] == "M"]["name"].nunique() # Unique names for male
+df[(df["M"] >= 50000) & (df["F"] >= 50000)] # names that atleast have 50,000 records for each gender
+
+male_df = df[df["gender"] == "M"].groupby("year").sum()
+male_df.min()["count"]
+male_df.idxmin()["count"]
+
+df[df["year"] >= 2008].pivot_table(index="name", columns="year", values="count", aggfunc=np.sum).fillna(0)
+
+
+
+# Step by step approach, ...
+df = df[df["gender"] == "M"]
+df = df[["name", "count"]]
+df = df.groupby("name")
+df = df.sum()
+df = df.sort_values("count", ascending=False)
+df.head(10)
+# ... the same one-liner
+df[df["gender"] == "M"][["name", "count"]].groupby("name").sum().sort_values("count", ascending=False).head(10)
+
+
+
+
 # delete columns
 UC.drop(UC.columns[[3,4]],axis=1)
 interesting_collums = ['loyalty', 'satisfaction','educ']      
