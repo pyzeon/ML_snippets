@@ -1,5 +1,9 @@
 # t test for equal means for all collums specified
 
+import numpy as np
+import scipy.stats as scs
+import pandas as pd
+
 def t_test(subset1, subset2, collums_to_test):
     f_test_dict = {}
     t_stat_dict = {}
