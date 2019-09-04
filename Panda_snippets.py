@@ -185,6 +185,92 @@ df[df["gender"] == "M"][["name", "count"]].groupby("name").sum().sort_values("co
 
 
 
+# Example of filtering the dataframe ----------------------------------------------------------
+
+# Source: https://github.com/zbirnba1/quantative-finance/blob/master/src/recommended_portfolios.py
+		qvdf=qvdf[pd.to_datetime(qvdf['release_date']).dt.date<last_valid_day.date()]
+		qvdf=qvdf[pd.to_datetime(qvdf['end_date']).dt.date>=last_valid_day.date()-relativedelta(months=6)]
+		qvdf=qvdf[qvdf['split_since_last_statement']==False]
+		#filter out companies that will complicate my taxes
+		qvdf=qvdf[~qvdf['name'].str[-2:].str.contains('LP')]
+		qvdf=qvdf[~qvdf['name'].str[-3:].str.contains('LLC')]
+
+		#Filter out Financial and Utilities
+		s=qvdf['industry_category'].isin([None,"Banking","Financial Services","Real Estate","Utilities"])
+		qvdf=qvdf[~s]
+
+		#FILTER OUT MANIPULATORS OR DISTRESS COMPANIES
+		#drop any companyes where either sta or snoa is nan, we only want to keep companies we can actually measure financial distress
+		qvdf = qvdf[((pd.notnull(qvdf['sta']))|(pd.notnull(qvdf['snoa'])))&
+                (pd.notnull(qvdf['pman']))&(pd.notnull(qvdf['pfd']))] #make sure one or the other is not nan
+		qvdf = qvdf[(pd.notnull(qvdf['roa']))&(pd.notnull(qvdf['roc']))&
+                (pd.notnull(qvdf['cfoa']))&((pd.notnull(qvdf['mg']))|(pd.notnull(qvdf['ms'])))]
+
+		if len(qvdf)==0:
+			logging.error('empty qvdf')
+			exit()
+		qvdf=qvdf.sort_values(['sta'],na_position='last')#the lower the better
+		totallen=len(qvdf[pd.notnull(qvdf['sta'])])
+		i=1
+		for index,row in qvdf[pd.notnull(qvdf['sta'])].iterrows():
+			qvdf.loc[index,"p_sta"]=float(i)/float(totallen)
+			i+=1
+
+		qvdf=qvdf.sort_values(['snoa'],na_position='last') #the lower the better
+		totallen=len(qvdf[pd.notnull(qvdf['snoa'])])
+		i=1
+		for index,row in qvdf[pd.notnull(qvdf['snoa'])].iterrows():
+			qvdf.loc[index,"p_snoa"]=float(i)/float(totallen)
+			i+=1
+
+		qvdf['comboaccrual']=qvdf[["p_snoa","p_sta"]].mean(axis=1)
+		qvdf=qvdf[pd.notnull(qvdf['comboaccrual'])]
+
+		cutoff=.95
+		s=(qvdf['comboaccrual']<cutoff)&(qvdf['p_pman']<cutoff)&(qvdf['p_pfd']<cutoff)
+		qvdf=qvdf[s]
+
+		qvdf = qvdf[(pd.notnull(qvdf['roa']))&(pd.notnull(qvdf['roc']))&(pd.notnull(qvdf['cfoa']))&
+                ((pd.notnull(qvdf['mg']))|(pd.notnull(qvdf['ms'])))]
+
+
+		qvdf['marginmax']=qvdf[["p_ms","p_mg"]].max(axis=1)
+		qvdf['franchisepower']=qvdf[["marginmax","p_roa","p_roc","p_cfoa"]].mean(axis=1)
+		qvdf=qvdf[pd.notnull(qvdf['franchisepower'])]
+
+		qvdf=qvdf[pd.notnull(qvdf['emyield'])]
+		qvdf=qvdf.sort_values(['emyield'],na_position='first') #the higher
+		i=1
+		for index,row in qvdf.iterrows():
+			qvdf.loc[index,"p_emyield"]=float(i)/float(len(qvdf))
+			i+=1
+		s=qvdf['p_emyield']>=.9
+		qvdf=qvdf[s]
+
+		goodrows=(qvdf['newshares']<=0)|(qvdf['sec13']>0)|(qvdf['daystocover']<=1)|(qvdf['insider_purchase_ratio'].astype('float')>0)
+		qvdf=qvdf[goodrows]
+		qvdf['weight']=float(1)/float(len(qvdf))
+
+		qvdf=qvdf[['ticker','name','industry_group','emyield','price','marketcap','weight']]
+    qvdf=qvdf.set_index('ticker')
+
+
+
+
+
+# --------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
 # delete columns
 UC.drop(UC.columns[[3,4]],axis=1)
 interesting_collums = ['loyalty', 'satisfaction','educ']      
