@@ -1,7 +1,5 @@
 # Series creation
-Series([1,2,3,4])
-Series([3,4,5,6,7],index=['a','b','c','d','e'])
-Series([3]*5)
+Series([1,2,3,4]), Series([3,4,5,6,7],index=['a','b','c','d','e']), Series([3]*5)
 Series(np.arange(4,9)) # using the numpy function
 Series(np.linspace(0,9,5)) # allows to specify the number of values to be created btw boundaries
 
@@ -130,6 +128,15 @@ type(NQ100['lastsale']), SPY_TICK.dtypes
 SPX500.shape, len(SPY_TICK)
 GBPCAD.columns
 SPX500.count(), SPY_TICK.describe()
+
+
+pip install pandas-profiling 
+import pandas_profiling
+df = pd.read_csv("titanic/train.csv")
+df.profile_report() # Show in NB
+profile = df.profile_report(title='Pandas Profiling Report')  
+profile.to_file(outputfile="Titanic data profiling.html")
+
 
 NQ100.rename(columns={'lastsale':'Last'}) # rename column
 
