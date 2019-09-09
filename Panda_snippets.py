@@ -1,5 +1,5 @@
 # Series creation
-Series([1,2,3,4]), Series([3,4,5,6,7],index=['a','b','c','d','e']), Series([3]*5)
+Series([1,2,3,4]), Series([3,4,5,6,7],index=['a','b','c','d','e']), Series([3]*5), np.zeros(10)
 Series(np.arange(4,9)) # using the numpy function
 Series(np.linspace(0,9,5)) # allows to specify the number of values to be created btw boundaries
 
@@ -53,9 +53,22 @@ bob = Series(np.arange(3,30,3))
 bob >15
 bob[(bob>15) & (bob<25)]
 
+
+# find the closest value (to a given scalar)
+Z = np.arange(100)
+v = np.random.uniform(0,100)
+index = (np.abs(Z-v)).argmin()
+print(Z[index])
+
+
+
+
 line = Series(np.random.randint(1,200,size=1000))
 line.sample(n=3)
 line.sample(frac=0.05) #selects 5% of data
+
+
+np.nonzero([1,2,0,0,4,0]) # find indices of non-zero elements
 
 
 # Actions with series -------------------------------------------------------------------------------------
@@ -74,6 +87,20 @@ bob = Series(np.arange(3,30,3))
 (bob>15).sum()
 bob.isnull().sum()
 
+# find common values between two arrays
+Z1 = np.random.randint(0,10,10)
+Z2 = np.random.randint(0,10,10)
+print(np.intersect1d(Z1,Z2))
+
+
+# Check if arrays are equal
+A = np.random.randint(0,2,5), B = np.random.randint(0,2,5)
+equal = np.allclose(A,B) # Assuming identical shape of the arrays and a tolerance for the comparison of values 
+equal = np.array_equal(A,B) # Checking both the shape and the element values, no tolerance (values have to be exactly equal)
+
+
+
+
 
 # rolling window
 s = Series(np.random.randint(1,200,size=1000))
@@ -84,6 +111,10 @@ r.mean().plot()
 goa=Series(np.random.normal(size=5))
 goa[5]=100 # changing
 del(goa[2]) # deleting
+
+Z = np.random.random(10)
+Z[Z.argmax()] = 0 # replace the maximum value by 0
+
 
 # Dataframes (many series) -----------------------------------------------------------------------
 
@@ -103,6 +134,8 @@ tm.N, tm.K = 5,3
 tm.makeDataFrame()
 tm.makeMixedDataFrame()
 tm.makeTimeDataFrame(freq="W")
+
+np.random.random((3,3,3)) # Create a 3x3x3 array with random values
 
 # Importing data -----------------------------------------------------------------------
 SPX500=pd.read_csv("D:\\Data\\tick_data\\tick_data_zorro\\SPX500_2015.csv")
@@ -150,10 +183,15 @@ USDCHF['Minute_ClCl']=USDCHF.Close.diff()
 UC=USDCHF.dropna()
 
 
+
+
 # Grouping
 values=np.random.randint(0,100,5)
 bins = pd.DataFrame({'Values':values})
 bins['Group']=pd.cut(values,range(0,101,10))
+
+
+
 
 #making subsets
 USDCHF[USDCHF.Volume>200]
@@ -176,6 +214,10 @@ male_df.min()["count"]
 male_df.idxmin()["count"]
 
 df[df["year"] >= 2008].pivot_table(index="name", columns="year", values="count", aggfunc=np.sum).fillna(0)
+
+
+Z = np.random.random((5,5))
+Z = (Z - np.mean (Z)) / (np.std (Z)) # Normalize a 5x5 random matrix
 
 
 
