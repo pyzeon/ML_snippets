@@ -1,141 +1,56 @@
+# CREATE SERIES OR DATAFRAME (many series) --------------------------------------------------------------------
+
 # Series creation
-Series([1,2,3,4]), Series([3,4,5,6,7],index=['a','b','c','d','e']), Series([3]*5), np.zeros(10)
-Series(np.arange(4,9)) # using the numpy function
-Series(np.linspace(0,9,5)) # allows to specify the number of values to be created btw boundaries
+	Series([1,2,3,4]), Series([3,4,5,6,7],index=['a','b','c','d','e']), Series([3]*5), np.zeros(10)
+	Series(np.arange(4,9)) # using the numpy function
+	Series(np.linspace(0,9,5)) # allows to specify the number of values to be created btw boundaries
 
-pd.date_range('2016-08-01','2017-08-01')
-dates = pd.date_range('2016-08-01','2017-08-01', freq='M')
-idx = pd.date_range("2018-1-1",periods=20,freq="H")
-ts = pd.Series(range(len(idx)),index=idx)
-ts.resample("2H").mean()
+	pd.date_range('2016-08-01','2017-08-01')
+	dates = pd.date_range('2016-08-01','2017-08-01', freq='M')
+	idx = pd.date_range("2018-1-1",periods=20,freq="H")
+	ts = pd.Series(range(len(idx)),index=idx)
+	ts.resample("2H").mean()
 
-pd.Series(range(10),index=pd.date_range("2000",freq="D",periods=10))
+	pd.Series(range(10),index=pd.date_range("2000",freq="D",periods=10))
 
 # dummy datasets with dates
-import pandas.util.testing as tm
-tm.N, tm.K = 5,3
-tm.makeTimedeltaIndex()
-tm.makeTimeSeries()
-tm.makePeriodSeries()
-tm.makeDateIndex()
-tm.makePeriodIndex()
-tm.makeObjectSeries()
+	import pandas.util.testing as tm
+	tm.N, tm.K = 5,3
+	tm.makeTimedeltaIndex(), tm.makeTimeSeries(), tm.makePeriodSeries()
+	tm.makeDateIndex(), tm.makePeriodIndex(), tm.makeObjectSeries()
 
 # random series
-Series(np.random.normal(size=5))
-np.random.randint(50,101,len(dates))
+	Series(np.random.normal(size=5))
+	np.random.randint(50,101,len(dates))
 
-import pandas.util.testing as tm
-tm.N, tm.K = 5,3
-tm.makeFloatSeries()
-tm.makeStringSeries()
-tm.makeBoolIndex()
-tm.makeCategoricalIndex()
-tm.makeCustomIndex(nentries=4,nlevels=2)
-tm.makeFloatIndex()
-tm.makeIntIndex()
-tm.makeIntervalIndex()
-tm.makeMultiIndex()
-tm.makeRangeIndex()
+	tm.makeFloatSeries(), tm.makeBoolIndex(), tm.makeCategoricalIndex()
+	tm.makeCustomIndex(nentries=4,nlevels=2), tm.makeFloatIndex(), tm.makeIntIndex()
+	tm.makeMultiIndex(), tm.makeRangeIndex(), tm.makeIntervalIndex()
 
 # string series
-Series(list('abcde'))
-random.choices(string.ascii_lowercase,k=5) # generates k random letters
-tm.makeStringIndex()
+	Series(list('abcde'))
+	random.choices(string.ascii_lowercase,k=5) # generates k random letters
+	tm.makeStringIndex()
 
-# Selection of a series member -----------------------------------------------------------------------------
+# Create dataframes 
+	dates=pd.date_range('2016-08-01','2017-08-01')
+	s = Series(np.random.randint(50,60,size=len(dates)))
+	temp_df=pd.DataFrame({'Hurra':dates, 'Pinguin':s})
 
-s = Series(np.random.randint(10,100,size =30))
-s[3], s[[1,3]], s[3:17:4] # step 4
-s.head(), s[:5], s[:-2] # all but the last 2
-
-bob = Series(np.arange(3,30,3))
-bob >15
-bob[(bob>15) & (bob<25)]
-
-
-# find the closest value (to a given scalar)
-Z = np.arange(100)
-v = np.random.uniform(0,100)
-index = (np.abs(Z-v)).argmin()
-print(Z[index])
-
-
-
-
-line = Series(np.random.randint(1,200,size=1000))
-line.sample(n=3)
-line.sample(frac=0.05) #selects 5% of data
-
-
-np.nonzero([1,2,0,0,4,0]) # find indices of non-zero elements
-
-
-# Actions with series -------------------------------------------------------------------------------------
-
-
-s= Series(np.random.randint(50,60,size=20))
-s.values, s.index
-len(s), s.size
-s.unique(), s.value_counts(), s.nunique()# number of unique values
-s.mean(), s.describe(), s.idxmax()
-s.rank()
-
-bob = Series(np.arange(3,30,3))
-(bob>10).any() # bool
-(bob>2).all() # bool
-(bob>15).sum()
-bob.isnull().sum()
-
-# find common values between two arrays
-Z1 = np.random.randint(0,10,10)
-Z2 = np.random.randint(0,10,10)
-print(np.intersect1d(Z1,Z2))
-
-
-# Check if arrays are equal
-A = np.random.randint(0,2,5), B = np.random.randint(0,2,5)
-equal = np.allclose(A,B) # Assuming identical shape of the arrays and a tolerance for the comparison of values 
-equal = np.array_equal(A,B) # Checking both the shape and the element values, no tolerance (values have to be exactly equal)
-
-
-
-
-
-# rolling window
-s = Series(np.random.randint(1,200,size=1000))
-r=s.rolling(window=10)
-s.plot()
-r.mean().plot()
-
-goa=Series(np.random.normal(size=5))
-goa[5]=100 # changing
-del(goa[2]) # deleting
-
-Z = np.random.random(10)
-Z[Z.argmax()] = 0 # replace the maximum value by 0
-
-
-# Dataframes (many series) -----------------------------------------------------------------------
-
-dates=pd.date_range('2016-08-01','2017-08-01')
-s = Series(np.random.randint(50,60,size=len(dates)))
-temp_df=pd.DataFrame({'Hurra':dates, 'Pinguin':s})
-
-from itertools import product
-datecols = ['year', 'month', 'day']
-df = pd.DataFrame(list(product([2016,2017],[1,2],[1,2,3])),columns = datecols)
-df['data']=np.random.randn(len(df))
-df.index = pd.to_datetime(df[datecols])
+	from itertools import product
+	datecols = ['year', 'month', 'day']
+	df = pd.DataFrame(list(product([2016,2017],[1,2],[1,2,3])),columns = datecols)
+	df['data']=np.random.randn(len(df))
+	df.index = pd.to_datetime(df[datecols])
 
 # quickly create a dataframe for testing
-import pandas.util.testing as tm
-tm.N, tm.K = 5,3
-tm.makeDataFrame()
-tm.makeMixedDataFrame()
-tm.makeTimeDataFrame(freq="W")
+	import pandas.util.testing as tm
+	tm.N, tm.K = 5,3
+	tm.makeDataFrame(), tm.makeMixedDataFrame(), tm.makeTimeDataFrame(freq="W")
 
-np.random.random((3,3,3)) # Create a 3x3x3 array with random values
+np.random.random((3,3,3)) # Create a 3x3x3 array with random values	
+
+
 
 # Importing data -----------------------------------------------------------------------
 SPX500=pd.read_csv("D:\\Data\\tick_data\\tick_data_zorro\\SPX500_2015.csv")
@@ -156,201 +71,275 @@ data['educ'] = pd.to_numeric(data['educ'],errors='coerce')
 
 
 
-# Analysing DF --------------------------------------------------------------------------------
+
+
+	
+#----------------------------------------------------------------------------------------------------------
+# Describe and actions with series ------------------------------------------------------------------------
+
+s = Series(np.random.randint(10,100,size =30))
+s[3], s[[1,3]], s[3:17:4] # step 4
+s.head(), s[:5], s[:-2] # all but the last 2
+
+bob = Series(np.arange(3,30,3))
+bob >15
+bob[(bob>15) & (bob<25)]
+
+
+line = Series(np.random.randint(1,200,size=1000))
+line.sample(n=3)
+line.sample(frac=0.05) #selects 5% of data
+
+np.nonzero([1,2,0,0,4,0]) # find indices of non-zero elements
+
+s= Series(np.random.randint(50,60,size=20))
+s.values, s.index
+len(s), s.size
+s.unique(), s.value_counts(), s.nunique()# number of unique values
+s.mean(), s.describe(), s.idxmax()
+s.rank()
+
+bob = Series(np.arange(3,30,3))
+(bob>10).any() # bool
+(bob>2).all() # bool
+(bob>15).sum()
+bob.isnull().sum()
+
+# find the closest value (to a given scalar)
+	Z = np.arange(100)
+	v = np.random.uniform(0,100)
+	index = (np.abs(Z-v)).argmin()
+	print(Z[index])
+
+# find common values between two arrays
+	Z1 = np.random.randint(0,10,10)
+	Z2 = np.random.randint(0,10,10)
+	print(np.intersect1d(Z1,Z2))
+
+# Check if arrays are equal
+	A = np.random.randint(0,2,5), B = np.random.randint(0,2,5)
+	equal = np.allclose(A,B) # Assuming identical shape of the arrays and a tolerance for the comparison of values 
+	equal = np.array_equal(A,B) # Checking both the shape and the element values, no tolerance (values have to be exactly equal)
+
+# rolling window
+	s = Series(np.random.randint(1,200,size=1000))
+	r=s.rolling(window=10)
+	s.plot()
+	r.mean().plot()
+
+	
+goa=Series(np.random.normal(size=5))
+goa[5]=100 # changing
+del(goa[2]) # deleting
+
+Z = np.random.random(10)
+Z[Z.argmax()] = 0 # replace the maximum value by 0
+
+
+
+# importance of index
+	df = pd.DataFrame({'foo':np.random.random(10000),'key':range(100,10100)})
+	%timeit df[df.key==10099] # following code performs the lookup repeatedly and reports on the performance
+	df_with_index = df.set_index(['key'])
+	%timeit df_with_index.loc[10099]
+
+
+#---------------------------------------------------------------------------------------------------------------
+# Analysing DF -------------------------------------------------------------------------------------------------
+
 type(NQ100['lastsale']), SPY_TICK.dtypes
 SPX500.shape, len(SPY_TICK)
 GBPCAD.columns
 SPX500.count(), SPY_TICK.describe()
 
+# describe DF
+	pip install pandas-profiling 
+	import pandas_profiling
+	df = pd.read_csv("titanic/train.csv")
+	df.profile_report() # Show in NB
+	profile = df.profile_report(title='Pandas Profiling Report')  
+	profile.to_file(outputfile="Titanic data profiling.html")
 
-pip install pandas-profiling 
-import pandas_profiling
-df = pd.read_csv("titanic/train.csv")
-df.profile_report() # Show in NB
-profile = df.profile_report(title='Pandas Profiling Report')  
-profile.to_file(outputfile="Titanic data profiling.html")
+	Z = np.random.random((5,5))
+	Z = (Z - np.mean (Z)) / (np.std (Z)) # Normalize a 5x5 random matrix
+
+# rename column	
+	NQ100.rename(columns={'lastsale':'Last'}) 
 
 
-NQ100.rename(columns={'lastsale':'Last'}) # rename column
+# Deleting
+	UC=USDCHF.dropna()
 
+	# delete columns
+		UC.drop(UC.columns[[3,4]],axis=1)
+		interesting_collums = ['loyalty', 'satisfaction','educ']      
+		reduced = data[interesting_collums]
+
+		import itertools
+		datecols = ['year', 'month', 'day']
+		df = pd.DataFrame(list(itertools.product([2016,2017],[1,2],[1,2,3])),columns = datecols)
+		df['data']=np.random.randn(len(df))
+		df.index = pd.to_datetime(df[datecols])
+		df=df.drop(datecols,axis=1).squeeze()
+
+	# delete rows
+		NQ100_small.drop('PYPL')
+		NQ100new[-NQ100new.Last>1000]
+
+# Appending rows
+	UC_new= UC.nlargest(20,'Volume')
+	UC_new.append(UC.nlargest(20,'Minute_ClCl'))
+	pd.concat([UC.sample(n=10), UC.sample(n=10)])
+	UC_new.loc['ZABR']=['Ukraine',100,120,1,2,3] # the number of columns should match
+
+
+	
 # creating new columns
-NQ100['Capitalisation']=NQ100.Last*NQ100.share_volume
-NQ100['Random']=Series(np.random.normal(size=len(NQ100)),index=NQ100.index)
-NQ100.insert(1,'Rand',Series(np.random.normal(size=len(NQ100)),index=NQ100.index))
-NQ100.Randomize=NQ100.Rand
-USDCHF['Minute_ClCl']=USDCHF.Close.diff()
-
-UC=USDCHF.dropna()
-
-
-
+	NQ100['Capitalisation']=NQ100.Last*NQ100.share_volume
+	NQ100['Random']=Series(np.random.normal(size=len(NQ100)),index=NQ100.index)
+	NQ100.insert(1,'Rand',Series(np.random.normal(size=len(NQ100)),index=NQ100.index))
+	NQ100.Randomize=NQ100.Rand
+	USDCHF['Minute_ClCl']=USDCHF.Close.diff()
 
 # Grouping
-values=np.random.randint(0,100,5)
-bins = pd.DataFrame({'Values':values})
-bins['Group']=pd.cut(values,range(0,101,10))
-
-
-
+	values=np.random.randint(0,100,5)
+	bins = pd.DataFrame({'Values':values})
+	bins['Group']=pd.cut(values,range(0,101,10))
 
 #making subsets
-USDCHF[USDCHF.Volume>200]
-NQ100[(NQ100.share_volume>10000000) & (NQ100.lastsale<40)]['Name']
-UC.nlargest(20,'Minute_ClCl')
-NQ100.nsmallest(4,'share_volume')['share_volume']
-NQ100.share_volume.nlargest(4)
-USDCHF[2:5]
-NQ100.sample(n=6)
-NQ100.loc['GOOG']
-temp_df['Hurra'][1:3]
-temp_df.iloc[1]
-NQ100.at['FB','Last']
+	USDCHF[USDCHF.Volume>200]
+	NQ100[(NQ100.share_volume>10000000) & (NQ100.lastsale<40)]['Name']
+	UC.nlargest(20,'Minute_ClCl')
+	NQ100.nsmallest(4,'share_volume')['share_volume']
+	NQ100.share_volume.nlargest(4)
+	USDCHF[2:5]
+	NQ100.sample(n=6)
+	NQ100.loc['GOOG']
+	temp_df['Hurra'][1:3]
+	temp_df.iloc[1]
+	NQ100.at['FB','Last']
 
-df[df["gender"] == "M"]["name"].nunique() # Unique names for male
-df[(df["M"] >= 50000) & (df["F"] >= 50000)] # names that atleast have 50,000 records for each gender
+	df[df["gender"] == "M"]["name"].nunique() # Unique names for male
+	df[(df["M"] >= 50000) & (df["F"] >= 50000)] # names that atleast have 50,000 records for each gender
 
-male_df = df[df["gender"] == "M"].groupby("year").sum()
-male_df.min()["count"]
-male_df.idxmin()["count"]
+	male_df = df[df["gender"] == "M"].groupby("year").sum()
+	male_df.min()["count"]
+	male_df.idxmin()["count"]
 
-df[df["year"] >= 2008].pivot_table(index="name", columns="year", values="count", aggfunc=np.sum).fillna(0)
-
-
-Z = np.random.random((5,5))
-Z = (Z - np.mean (Z)) / (np.std (Z)) # Normalize a 5x5 random matrix
+	df[df["year"] >= 2008].pivot_table(index="name", columns="year", values="count", aggfunc=np.sum).fillna(0)
 
 
-
-# Step by step approach, ...
-df = df[df["gender"] == "M"]
-df = df[["name", "count"]]
-df = df.groupby("name")
-df = df.sum()
-df = df.sort_values("count", ascending=False)
-df.head(10)
-# ... the same one-liner
-df[df["gender"] == "M"][["name", "count"]].groupby("name").sum().sort_values("count", ascending=False).head(10)
-
-
+	# Step by step approach, ...
+		df = df[df["gender"] == "M"]
+		df = df[["name", "count"]]
+		df = df.groupby("name")
+		df = df.sum()
+		df = df.sort_values("count", ascending=False)
+		df.head(10)
+	# ... the same one-liner
+	df[df["gender"] == "M"][["name", "count"]].groupby("name").sum().sort_values("count", ascending=False).head(10)
+	
+	
 
 
 # Example of filtering the dataframe ----------------------------------------------------------
+	# Source: https://github.com/zbirnba1/quantative-finance/blob/master/src/recommended_portfolios.py
+	qvdf=qvdf[pd.to_datetime(qvdf['release_date']).dt.date<last_valid_day.date()]
+	qvdf=qvdf[pd.to_datetime(qvdf['end_date']).dt.date>=last_valid_day.date()-relativedelta(months=6)]
+	qvdf=qvdf[qvdf['split_since_last_statement']==False]
+	
+	#filter out companies that will complicate my taxes
+	qvdf=qvdf[~qvdf['name'].str[-2:].str.contains('LP')]
+	qvdf=qvdf[~qvdf['name'].str[-3:].str.contains('LLC')]
 
-# Source: https://github.com/zbirnba1/quantative-finance/blob/master/src/recommended_portfolios.py
-		qvdf=qvdf[pd.to_datetime(qvdf['release_date']).dt.date<last_valid_day.date()]
-		qvdf=qvdf[pd.to_datetime(qvdf['end_date']).dt.date>=last_valid_day.date()-relativedelta(months=6)]
-		qvdf=qvdf[qvdf['split_since_last_statement']==False]
-		#filter out companies that will complicate my taxes
-		qvdf=qvdf[~qvdf['name'].str[-2:].str.contains('LP')]
-		qvdf=qvdf[~qvdf['name'].str[-3:].str.contains('LLC')]
+	#Filter out Financial and Utilities
+	s=qvdf['industry_category'].isin([None,"Banking","Financial Services","Real Estate","Utilities"])
+	qvdf=qvdf[~s]
 
-		#Filter out Financial and Utilities
-		s=qvdf['industry_category'].isin([None,"Banking","Financial Services","Real Estate","Utilities"])
-		qvdf=qvdf[~s]
+	#FILTER OUT MANIPULATORS OR DISTRESS COMPANIES: drop any companyes where either sta or snoa is nan
+	qvdf = qvdf[((pd.notnull(qvdf['sta']))|(pd.notnull(qvdf['snoa'])))&
+                	(pd.notnull(qvdf['pman']))&(pd.notnull(qvdf['pfd']))] #make sure one or the other is not nan
+	qvdf = qvdf[(pd.notnull(qvdf['roa']))&(pd.notnull(qvdf['roc']))&
+                	(pd.notnull(qvdf['cfoa']))&((pd.notnull(qvdf['mg']))|(pd.notnull(qvdf['ms'])))]
 
-		#FILTER OUT MANIPULATORS OR DISTRESS COMPANIES
-		#drop any companyes where either sta or snoa is nan, we only want to keep companies we can actually measure financial distress
-		qvdf = qvdf[((pd.notnull(qvdf['sta']))|(pd.notnull(qvdf['snoa'])))&
-                (pd.notnull(qvdf['pman']))&(pd.notnull(qvdf['pfd']))] #make sure one or the other is not nan
-		qvdf = qvdf[(pd.notnull(qvdf['roa']))&(pd.notnull(qvdf['roc']))&
-                (pd.notnull(qvdf['cfoa']))&((pd.notnull(qvdf['mg']))|(pd.notnull(qvdf['ms'])))]
+	if len(qvdf)==0:
+		logging.error('empty qvdf')
+		exit()
+	qvdf=qvdf.sort_values(['sta'],na_position='last')#the lower the better
+	totallen=len(qvdf[pd.notnull(qvdf['sta'])])
+	i=1
+	for index,row in qvdf[pd.notnull(qvdf['sta'])].iterrows():
+		qvdf.loc[index,"p_sta"]=float(i)/float(totallen)
+		i+=1
 
-		if len(qvdf)==0:
-			logging.error('empty qvdf')
-			exit()
-		qvdf=qvdf.sort_values(['sta'],na_position='last')#the lower the better
-		totallen=len(qvdf[pd.notnull(qvdf['sta'])])
-		i=1
-		for index,row in qvdf[pd.notnull(qvdf['sta'])].iterrows():
-			qvdf.loc[index,"p_sta"]=float(i)/float(totallen)
-			i+=1
+	qvdf=qvdf.sort_values(['snoa'],na_position='last') #the lower the better
+	totallen=len(qvdf[pd.notnull(qvdf['snoa'])])
+	i=1
+	for index,row in qvdf[pd.notnull(qvdf['snoa'])].iterrows():
+		qvdf.loc[index,"p_snoa"]=float(i)/float(totallen)
+		i+=1
 
-		qvdf=qvdf.sort_values(['snoa'],na_position='last') #the lower the better
-		totallen=len(qvdf[pd.notnull(qvdf['snoa'])])
-		i=1
-		for index,row in qvdf[pd.notnull(qvdf['snoa'])].iterrows():
-			qvdf.loc[index,"p_snoa"]=float(i)/float(totallen)
-			i+=1
+	qvdf['comboaccrual']=qvdf[["p_snoa","p_sta"]].mean(axis=1)
+	qvdf=qvdf[pd.notnull(qvdf['comboaccrual'])]
 
-		qvdf['comboaccrual']=qvdf[["p_snoa","p_sta"]].mean(axis=1)
-		qvdf=qvdf[pd.notnull(qvdf['comboaccrual'])]
+	cutoff=.95
+	s=(qvdf['comboaccrual']<cutoff)&(qvdf['p_pman']<cutoff)&(qvdf['p_pfd']<cutoff)
+	qvdf=qvdf[s]
 
-		cutoff=.95
-		s=(qvdf['comboaccrual']<cutoff)&(qvdf['p_pman']<cutoff)&(qvdf['p_pfd']<cutoff)
-		qvdf=qvdf[s]
+	qvdf = qvdf[(pd.notnull(qvdf['roa']))&(pd.notnull(qvdf['roc']))&(pd.notnull(qvdf['cfoa']))&
+        	        ((pd.notnull(qvdf['mg']))|(pd.notnull(qvdf['ms'])))]
 
-		qvdf = qvdf[(pd.notnull(qvdf['roa']))&(pd.notnull(qvdf['roc']))&(pd.notnull(qvdf['cfoa']))&
-                ((pd.notnull(qvdf['mg']))|(pd.notnull(qvdf['ms'])))]
+	qvdf['marginmax']=qvdf[["p_ms","p_mg"]].max(axis=1)
+	qvdf['franchisepower']=qvdf[["marginmax","p_roa","p_roc","p_cfoa"]].mean(axis=1)
+	qvdf=qvdf[pd.notnull(qvdf['franchisepower'])]
 
+	qvdf=qvdf[pd.notnull(qvdf['emyield'])]
+	qvdf=qvdf.sort_values(['emyield'],na_position='first') #the higher
+	i=1
+	for index,row in qvdf.iterrows():
+		qvdf.loc[index,"p_emyield"]=float(i)/float(len(qvdf))
+		i+=1
+	s=qvdf['p_emyield']>=.9
+	qvdf=qvdf[s]
 
-		qvdf['marginmax']=qvdf[["p_ms","p_mg"]].max(axis=1)
-		qvdf['franchisepower']=qvdf[["marginmax","p_roa","p_roc","p_cfoa"]].mean(axis=1)
-		qvdf=qvdf[pd.notnull(qvdf['franchisepower'])]
+	goodrows=(qvdf['newshares']<=0)|(qvdf['sec13']>0)|(qvdf['daystocover']<=1)|(qvdf['insider_purchase_ratio'].astype('float')>0)
+	qvdf=qvdf[goodrows]
+	qvdf['weight']=float(1)/float(len(qvdf))
 
-		qvdf=qvdf[pd.notnull(qvdf['emyield'])]
-		qvdf=qvdf.sort_values(['emyield'],na_position='first') #the higher
-		i=1
-		for index,row in qvdf.iterrows():
-			qvdf.loc[index,"p_emyield"]=float(i)/float(len(qvdf))
-			i+=1
-		s=qvdf['p_emyield']>=.9
-		qvdf=qvdf[s]
-
-		goodrows=(qvdf['newshares']<=0)|(qvdf['sec13']>0)|(qvdf['daystocover']<=1)|(qvdf['insider_purchase_ratio'].astype('float')>0)
-		qvdf=qvdf[goodrows]
-		qvdf['weight']=float(1)/float(len(qvdf))
-
-		qvdf=qvdf[['ticker','name','industry_group','emyield','price','marketcap','weight']]
-    qvdf=qvdf.set_index('ticker')
+	qvdf=qvdf[['ticker','name','industry_group','emyield','price','marketcap','weight']]
+	qvdf=qvdf.set_index('ticker')
 
 
+# Example of cleaning a dataframe ---------------------------------------------------------------------------
+
+def clean_name(str_input): 
+        if "<span" in str_input:
+                soup = bs(str_input, "lxml")
+                return soup.find('span')['onmouseover'].lstrip("tooltip.show('").rstrip(".');")
+        return str_input
+
+def clean_ticker(str_input):
+        soup = bs(str_input, "lxml")
+        return soup.find('a').text
+
+def clean_allocation(str_input): 
+        if str_input == "NA":
+                return 0
+        return float(str_input)/100
+
+f['allocation'] = df.allocation.map(lambda x: clean_allocation(x))
+df['name'] = df.name.map(lambda x: clean_name(x))
+df['ticker'] = df.ticker.map(lambda x: clean_ticker(x))
 
 
 
-# --------------------------------------------------------------------
 
 
 
 
 
-
-
-
-
-
-
-
-# delete columns
-UC.drop(UC.columns[[3,4]],axis=1)
-interesting_collums = ['loyalty', 'satisfaction','educ']      
-reduced = data[interesting_collums]
-
-
-import itertools
-datecols = ['year', 'month', 'day']
-df = pd.DataFrame(list(itertools.product([2016,2017],[1,2],[1,2,3])),columns = datecols)
-df['data']=np.random.randn(len(df))
-df.index = pd.to_datetime(df[datecols])
-df=df.drop(datecols,axis=1).squeeze()
-
-# delete rows
-NQ100_small.drop('PYPL')
-NQ100new[-NQ100new.Last>1000]
-
-# Appending rows
-UC_new= UC.nlargest(20,'Volume')
-UC_new.append(UC.nlargest(20,'Minute_ClCl'))
-pd.concat([UC.sample(n=10), UC.sample(n=10)])
-UC_new.loc['ZABR']=['Ukraine',100,120,1,2,3] # the number of columns should match
-
-
-# importance of index
-df = pd.DataFrame({'foo':np.random.random(10000),'key':range(100,10100)})
-%timeit df[df.key==10099] # following code performs the lookup repeatedly and reports on the performance
-df_with_index = df.set_index(['key'])
-%timeit df_with_index.loc[10099]
-
-# Working with dates -----------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------------------
+# Working with dates ------------------------------------------------------------------------------------------------
 
 pd.to_datetime(pd.Series(["Jul 31, 2017","2010-10-01","2016/10/10","2014.06.10"]))
 pd.to_datetime(pd.Series(["11 Jul 2018","13.04.2015","30/12/2011"]),dayfirst=True)
@@ -363,35 +352,36 @@ pd.to_datetime([1349720105100, 1349720105200, 1349720105300, 1349720105400, 1349
 start=pd.Timestamp("2018-01-06 00:00:00")
 pd.date_range(start, periods=10,freq="2h20min")
 
-# Business days
-start = datetime(2018,10,1), end = datetime(2018,10,10)
-pd.date_range(start,end)
-pd.bdate_range(start,end)
-pd.bdate_range(start,periods=4,freq="BQS")
+# Business days and biz hours
+	start = datetime(2018,10,1), end = datetime(2018,10,10)
+	pd.date_range(start,end)
+	pd.bdate_range(start,end)
+	pd.bdate_range(start,periods=4,freq="BQS")
 
-rng=pd.date_range(start,end,freq="BM")
-ts=pd.Series(np.random.randn(len(rng)),index=rng)
-ts["2018"]
-ts["2019-2":"2019-7"]
-ts.truncate(before="2019-2",after="2019-7") # select less than above
+	rng=pd.date_range(start,end,freq="BM")
+	ts=pd.Series(np.random.randn(len(rng)),index=rng)
+	ts["2018"]
+	ts["2019-2":"2019-7"]
+	ts.truncate(before="2019-2",after="2019-7") # select less than above
 
-# https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#time-date-components
+	# https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#time-date-components
 
-two_biz_days=2*pd.offsets.BDay()
-friday = pd.Timestamp("2018-01-05")
-friday.day_name()
-two_biz_days.apply(friday).day_name()
-(friday+two_biz_days),(friday+two_biz_days).day_name()
+	two_biz_days=2*pd.offsets.BDay()
+	friday = pd.Timestamp("2018-01-05")
+	friday.day_name()
+	two_biz_days.apply(friday).day_name()
+	(friday+two_biz_days),(friday+two_biz_days).day_name()
 
-ts =pd.Timestamp("2018-01-06 00:00:00")
-ts.day_name() # --> "Saturday"
-offset=pd.offsets.BusinessHour(start="09:00")
-offset.rollforward(ts) # Bring the date to the closest offset date (Monday)
+	ts =pd.Timestamp("2018-01-06 00:00:00")
+	ts.day_name() # --> "Saturday"
+	offset=pd.offsets.BusinessHour(start="09:00")
+	offset.rollforward(ts) # Bring the date to the closest offset date (Monday)
 
-pd.offsets.BusinessHour() # from 9 till 17
-rng = pd.date_range("2018-01-10","2018-01-15",freq="BH") # BH is "business hour"
-rng+pd.DateOffset(months=2,hours=3)
+	pd.offsets.BusinessHour() # from 9 till 17
+	rng = pd.date_range("2018-01-10","2018-01-15",freq="BH") # BH is "business hour"
+	rng+pd.DateOffset(months=2,hours=3)
 
+	
 rng=pd.date_range(start,end,freq="D")
 ts=pd.Series(np.random.randn(len(rng)),index=rng)
 ts.shift(2)[1]
