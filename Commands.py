@@ -12,6 +12,7 @@ L.c<TAB>
 from itertools import co<TAB>
 import <TAB> # see which imports are available
 
+
 str.*find*? # looking for a string method that contains the word find somewhere
 
 %run myscript.py # running external code
