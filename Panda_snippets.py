@@ -61,6 +61,7 @@ NQ100=pd.read_csv("http://www.nasdaq.com/quotes/nasdaq-100-stocks.aspx?render=do
                  index_col='Symbol',
                  skipinitialspace=True)
 
+pandas.read_csv('http://www.nasdaq.com/investing/etfs/etf-finder-results.aspx?download=Yes')['Symbol'].values
 
 calls_df, = pd.read_html("http://apps.sandiego.gov/sdfiredispatch/", header=0, parse_dates=["Call Date"])
 
@@ -205,6 +206,11 @@ SPX500.count(), SPY_TICK.describe()
 	values=np.random.randint(0,100,5)
 	bins = pd.DataFrame({'Values':values})
 	bins['Group']=pd.cut(values,range(0,101,10))
+	
+	def data_array_merge(data_array): # merge all dfs into one dfs    
+		merged_df = functools.reduce(lambda left,right: pd.merge(left,right,on='Date'), data_array)
+    		merged_df.set_index('Date', inplace=True)
+    		return merged_df
 
 #making subsets
 	USDCHF[USDCHF.Volume>200]
@@ -228,6 +234,13 @@ SPX500.count(), SPY_TICK.describe()
 
 	df[df["year"] >= 2008].pivot_table(index="name", columns="year", values="count", aggfunc=np.sum).fillna(0)
 
+	
+	for ticker in stocks: # for each ticker in our pair          
+		mask = (stock_data['Date'] > start_date) & (stock_data['Date'] <= end_date) # filter our column based on a date range   
+		stock_data = stock_data.loc[mask] # rebuild our dataframe
+		stock_data = stock_data.reset_index(drop=True) # re-index the data        
+		array_pd_dfs.append(stock_data) # append our df to our array
+	
 
 	# Step by step approach, ...
 		df = df[df["gender"] == "M"]
