@@ -43,6 +43,16 @@
 	df['data']=np.random.randn(len(df))
 	df.index = pd.to_datetime(df[datecols])
 
+	
+        open_orders = []
+        for order in orders:
+            if order['state'] == 'queued':
+                open_orders.append(order)
+		
+	queried_symbols = [ fundamentals['symbol'] for fundamentals in queried_fundamentals ]
+	
+	
+	
 # quickly create a dataframe for testing
 	import pandas.util.testing as tm
 	tm.N, tm.K = 5,3
