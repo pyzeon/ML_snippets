@@ -110,6 +110,12 @@ s.unique(), s.value_counts(), s.nunique()# number of unique values
 s.mean(), s.describe(), s.idxmax()
 s.rank()
 
+# Find Index of Min Element
+lst = [40, 10, 20, 30]
+min(range(len(lst)), key=lst.__getitem__)
+
+
+
 bob = Series(np.arange(3,30,3))
 (bob>10).any() # bool
 (bob>2).all() # bool
@@ -126,6 +132,17 @@ bob.isnull().sum()
 	Z1 = np.random.randint(0,10,10)
 	Z2 = np.random.randint(0,10,10)
 	print(np.intersect1d(Z1,Z2))
+
+
+	dctA = {'a': 1, 'b': 2, 'c': 3}
+	dctB = {'b': 4, 'c': 3, 'd': 6}
+	"""loop over dicts that share (some) keys in Python3"""
+	for ky in dctA.keys() & dctB.keys():
+    	print(ky)
+	"""loop over dicts that share (some) keys and values in Python3"""
+	for item in dctA.items() & dctB.items():
+    	print(item)
+
 
 # Check if arrays are equal
 	A = np.random.randint(0,2,5), B = np.random.randint(0,2,5)
@@ -203,6 +220,10 @@ SPX500.count(), SPY_TICK.describe()
 	pd.concat([UC.sample(n=10), UC.sample(n=10)])
 	UC_new.loc['ZABR']=['Ukraine',100,120,1,2,3] # the number of columns should match
 
+	d1 = {'a': 1}
+	d2 = {'b': 2}
+	d1.update(d2)
+	print(d1)
 
 	
 # creating new columns
@@ -221,6 +242,23 @@ SPX500.count(), SPY_TICK.describe()
 		merged_df = functools.reduce(lambda left,right: pd.merge(left,right,on='Date'), data_array)
     		merged_df.set_index('Date', inplace=True)
     		return merged_df
+
+	''' Seperates dataframe into multiple by treatment
+	E.g. if treatment is 'gender' with possible values 1 (male) or 2 (female) 
+	the function returns a list of two frames: 
+	1st - with all males, 2nd - with all females) '''
+	def seperated_dataframes(df, treatment):
+		treat_col = data[treatment] # col with the treatment
+		dframes_sep = [] # list to hold seperated dataframes 
+		for cat in categories(treat_col): # Go through all categories of the treatment
+			for the treatmet into a new dataframe
+			df = data[treat_col == cat] # select all rows that match the category        
+			dframes_sep.append(df) # append the selected dataframe
+		return dframes_sep
+
+
+
+
 
 #making subsets
 	USDCHF[USDCHF.Volume>200]
@@ -244,7 +282,12 @@ SPX500.count(), SPY_TICK.describe()
 
 	df[df["year"] >= 2008].pivot_table(index="name", columns="year", values="count", aggfunc=np.sum).fillna(0)
 
-	
+
+	mask = df_results[pnl_col_name] > 0
+	all_winning_trades = df_results[pnl_col_name].loc[mask] 
+   
+
+
 	for ticker in stocks: # for each ticker in our pair          
 		mask = (stock_data['Date'] > start_date) & (stock_data['Date'] <= end_date) # filter our column based on a date range   
 		stock_data = stock_data.loc[mask] # rebuild our dataframe
@@ -355,56 +398,3 @@ df['name'] = df.name.map(lambda x: clean_name(x))
 df['ticker'] = df.ticker.map(lambda x: clean_ticker(x))
 
 
-
-
-
-
-
-
-#--------------------------------------------------------------------------------------------------------------------
-# Working with dates ------------------------------------------------------------------------------------------------
-
-pd.to_datetime(pd.Series(["Jul 31, 2017","2010-10-01","2016/10/10","2014.06.10"]))
-pd.to_datetime(pd.Series(["11 Jul 2018","13.04.2015","30/12/2011"]),dayfirst=True)
-# providing a format could increase speed of conversion significantly
-pd.to_datetime(pd.Series(["12-11-2010 01:56","11-01-2012 22:10","28-02-2013 14:59"]), format='%d-%m-%Y %H:%M')
-
-# epoch timestamps: default unit is nanoseconds
-pd.to_datetime([1349720105100, 1349720105200, 1349720105300, 1349720105400, 1349720105500], unit='ms')
-
-start=pd.Timestamp("2018-01-06 00:00:00")
-pd.date_range(start, periods=10,freq="2h20min")
-
-# Business days and biz hours
-	start = datetime(2018,10,1), end = datetime(2018,10,10)
-	pd.date_range(start,end)
-	pd.bdate_range(start,end)
-	pd.bdate_range(start,periods=4,freq="BQS")
-
-	rng=pd.date_range(start,end,freq="BM")
-	ts=pd.Series(np.random.randn(len(rng)),index=rng)
-	ts["2018"]
-	ts["2019-2":"2019-7"]
-	ts.truncate(before="2019-2",after="2019-7") # select less than above
-
-	# https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#time-date-components
-
-	two_biz_days=2*pd.offsets.BDay()
-	friday = pd.Timestamp("2018-01-05")
-	friday.day_name()
-	two_biz_days.apply(friday).day_name()
-	(friday+two_biz_days),(friday+two_biz_days).day_name()
-
-	ts =pd.Timestamp("2018-01-06 00:00:00")
-	ts.day_name() # --> "Saturday"
-	offset=pd.offsets.BusinessHour(start="09:00")
-	offset.rollforward(ts) # Bring the date to the closest offset date (Monday)
-
-	pd.offsets.BusinessHour() # from 9 till 17
-	rng = pd.date_range("2018-01-10","2018-01-15",freq="BH") # BH is "business hour"
-	rng+pd.DateOffset(months=2,hours=3)
-
-	
-rng=pd.date_range(start,end,freq="D")
-ts=pd.Series(np.random.randn(len(rng)),index=rng)
-ts.shift(2)[1]
