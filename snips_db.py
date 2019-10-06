@@ -1,3 +1,38 @@
+f = open("myfile", "w") # creation of file object, in the current working dir in write mode
+f.write("This is the first test line in the fiele. \n")
+f.write ("And this is the second and probably the last line. \n")
+f.close()
+
+
+print("a","b","c", file=open("testfile.txt","w"))
+
+
+f=open("myfile","r")
+line1 = f.readline()
+line2 = f.readline()
+f.close()
+print(line1, line2)
+
+#--------------------------------------------------------------------------------------------------------
+
+filename = "myfile.txt"
+with open(filename, "r") as f: # automaticall close the file in the end
+    for line in f:
+        print(f)
+
+# This above is equivalent to this:
+filename = "myfile.txt"
+try: 
+    f = open(filename, "r")
+    for line in f:
+        print(f)
+except Exception as e:
+    raise e
+finally:
+    f.close()
+
+#--------------------------------------------------------------------------------------------------------
+
 '''
 Short function using Pandas to export data from MongoDB to excel
 '''
@@ -176,3 +211,9 @@ if date == None:
 s_dir = os.getcwd() + '/' + date.strftime('%Y-%m-%d')
 if not os.path.exists(s_dir):
     os.makedirs(s_dir)
+
+#-----------------------------------------------------------------------------------------------------------------------	
+
+import os
+os.getcwd()
+print(os.getcwd())
