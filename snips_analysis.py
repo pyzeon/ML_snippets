@@ -397,4 +397,3 @@ f['allocation'] = df.allocation.map(lambda x: clean_allocation(x))
 df['name'] = df.name.map(lambda x: clean_name(x))
 df['ticker'] = df.ticker.map(lambda x: clean_ticker(x))
 
-
