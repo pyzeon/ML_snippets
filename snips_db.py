@@ -217,3 +217,18 @@ if not os.path.exists(s_dir):
 import os
 os.getcwd()
 print(os.getcwd())
+		
+		
+#-----------------------------------------------------------------------------------------------------------------------			
+def get_google_days(TCKR):
+    path='D:\\...\\'+TCKR+'.combined.csv'
+    if os.path.isfile(path):        
+        df = pd.read_csv(path,index_col=0,header=0) 
+        latest_date=df[df.index==max(df.index)]['DATE']
+        latest= pd.datetime.strptime(latest_date[0],'%Y-%m-%d')
+        ndays = pd.datetime.today().date()-latest.date()
+        return str(ndays.days) + 'd'
+    else:
+        return '100d'		
+		
+		
