@@ -1,5 +1,5 @@
 from github import Github
-g = Github("Alexanu", "Theanswer1_")
+g = Github("Alexanu", "XXXXX")
 for repo in g.get_user().get_repos():
     print(repo.parent.id)
 
