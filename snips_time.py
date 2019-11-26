@@ -151,6 +151,30 @@ def closest_business_day_in_past(date=None):
         date = dt.datetime.today()
     return date + BDay(1) - BDay(1)
 
+
+date = pd.datetime.strptime(pd.datetime.now().strftime('%Y%m%d'),'%Y%m%d')  
+        - pd.offsets.BDay(1)
+
+
+# -------------------------------------------------------------------------------------------------------------
+
+    date = pd.datetime.today() - pd.offsets.BDay(1)
+    date=date.date()
+    datestr = date.strftime('%Y%m%d')
+    daystr=str(date.day)
+    monthstr=str(date.month)
+    yearstr=str(date.year)
+    
+    
+    url='http://www.netfonds.no/quotes/exchange.php?'  
+    url=url+'exchange=%s'
+    url=url+'&at_day=' + daystr
+    url=url+'&at_month=' +monthstr
+    url=url+'&at_year=' +yearstr
+    url=url+'&format=csv'
+
+
+
 # -------------------------------------------------------------------------------------------------------------
     def prepare_date_strings(date):
 

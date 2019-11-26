@@ -116,11 +116,23 @@ min(range(len(lst)), key=lst.__getitem__)
 
 
 
+# If array, Min, Max value was given, it returns array that contains
+# values of given array which was larger than Min, and lower than Max.
+def limit(arr, min_lim=None, max_lim=None):
+    min_check = lambda val: True if min_lim is None else (min_lim <= val)
+    max_check = lambda val: True if max_lim is None else (val <= max_lim)    
+    return [val for val in arr if min_check(val) and max_check(val)]
+
+
+
+
+
 bob = Series(np.arange(3,30,3))
 (bob>10).any() # bool
 (bob>2).all() # bool
 (bob>15).sum()
 bob.isnull().sum()
+
 
 # find the closest value (to a given scalar)
 	Z = np.arange(100)
@@ -136,10 +148,10 @@ bob.isnull().sum()
 
 	dctA = {'a': 1, 'b': 2, 'c': 3}
 	dctB = {'b': 4, 'c': 3, 'd': 6}
-	"""loop over dicts that share (some) keys in Python3"""
+	"""loop over dicts that share (some) keys"""
 	for ky in dctA.keys() & dctB.keys():
     	print(ky)
-	"""loop over dicts that share (some) keys and values in Python3"""
+	"""loop over dicts that share (some) keys and values"""
 	for item in dctA.items() & dctB.items():
     	print(item)
 
@@ -149,11 +161,46 @@ bob.isnull().sum()
 	equal = np.allclose(A,B) # Assuming identical shape of the arrays and a tolerance for the comparison of values 
 	equal = np.array_equal(A,B) # Checking both the shape and the element values, no tolerance (values have to be exactly equal)
 
-# rolling window
-	s = Series(np.random.randint(1,200,size=1000))
-	r=s.rolling(window=10)
-	s.plot()
-	r.mean().plot()
+
+# if you suggest 20%, it will neglect the best 10% of values
+# and the worst 10% of values.
+def trimmean(arr, per):
+    ratio = per/200
+    # /100 for easy calculation by *, and /2 for easy adaption to best and worst parts.
+    cal_sum = 0
+    # sum value to be calculated to trimmean.
+    arr.sort()
+    neg_val = int(len(arr)*ratio)
+    arr = arr[neg_val:len(arr)-neg_val]
+    for i in arr:
+        cal_sum += i
+    return cal_sum/len(arr)
+
+
+
+# most_frequent_value
+def top_1(arr):
+    values = {}
+    result = []
+    f_val = 0
+
+    for i in arr:
+        if i in values:
+            values[i] += 1
+        else:
+            values[i] = 1
+
+    f_val = max(values.values())
+        
+    for i in values.keys():
+        if values[i] == f_val:
+            result.append(i)
+        else:
+            continue
+    
+    return result
+    
+
 
 	
 goa=Series(np.random.normal(size=5))
@@ -225,6 +272,14 @@ SPX500.count(), SPY_TICK.describe()
 	d1.update(d2)
 	print(d1)
 
+	# Adding anomalies to df
+	anomaly_dictionary={80: 3.1, 200: 3, 333: 1, 600: 2.6, 710: 2.1}
+	gasoline_price_df.loc[:,'Artificially_Generated_Anomaly']=0
+	for index, anomaly_value in anomaly_dictionary.items():
+		gasoline_price_df.loc[index,'Gasoline_Price']=anomaly_value
+		gasoline_price_df.loc[index,'Artificially_Generated_Anomaly']=1
+
+
 	
 # creating new columns
 	NQ100['Capitalisation']=NQ100.Last*NQ100.share_volume
@@ -240,22 +295,8 @@ SPX500.count(), SPY_TICK.describe()
 	
 	def data_array_merge(data_array): # merge all dfs into one dfs    
 		merged_df = functools.reduce(lambda left,right: pd.merge(left,right,on='Date'), data_array)
-    		merged_df.set_index('Date', inplace=True)
-    		return merged_df
-
-	''' Seperates dataframe into multiple by treatment
-	E.g. if treatment is 'gender' with possible values 1 (male) or 2 (female) 
-	the function returns a list of two frames: 
-	1st - with all males, 2nd - with all females) '''
-	def seperated_dataframes(df, treatment):
-		treat_col = data[treatment] # col with the treatment
-		dframes_sep = [] # list to hold seperated dataframes 
-		for cat in categories(treat_col): # Go through all categories of the treatment
-			for the treatmet into a new dataframe
-			df = data[treat_col == cat] # select all rows that match the category        
-			dframes_sep.append(df) # append the selected dataframe
-		return dframes_sep
-
+    	merged_df.set_index('Date', inplace=True)
+    	return merged_df
 
 
 
@@ -280,12 +321,30 @@ SPX500.count(), SPY_TICK.describe()
 	male_df.min()["count"]
 	male_df.idxmin()["count"]
 
-	df[df["year"] >= 2008].pivot_table(index="name", columns="year", values="count", aggfunc=np.sum).fillna(0)
+	df[df["year"] >= 2008].pivot_table(index="name", 
+										columns="year", 
+										values="count", 
+										aggfunc=np.sum).fillna(0)
 
 
 	mask = df_results[pnl_col_name] > 0
 	all_winning_trades = df_results[pnl_col_name].loc[mask] 
-   
+
+
+
+	''' Seperates dataframe into multiple by treatment
+	E.g. if treatment is 'gender' with possible values 1 (male) or 2 (female) 
+	the function returns a list of two frames: 
+	1st - with all males, 2nd - with all females) '''
+	def seperated_dataframes(df, treatment):
+		treat_col = data[treatment] # col with the treatment
+		dframes_sep = [] # list to hold seperated dataframes 
+		for cat in categories(treat_col): # Go through all categories of the treatment
+			df = data[treat_col == cat] # select all rows that match the category        
+			dframes_sep.append(df) # append the selected dataframe
+		return dframes_sep
+
+
 
 
 	for ticker in stocks: # for each ticker in our pair          
