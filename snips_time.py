@@ -65,6 +65,7 @@ def str_to_date(dt):
 # -------------------------------------------------------------------------------------------------------------
 start_trading_day = datetime.date(2017, 6, 8)
 end_trading_day = datetime.date(2017, 6, 20) #end_trading_day
+# end_trading_day  = datetime.date.today()
 trading_days = []
 while start_trading_day <= end_trading_day:
     trading_days.append(start_trading_day)
