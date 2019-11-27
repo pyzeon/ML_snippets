@@ -83,6 +83,18 @@ data['educ'] = pd.to_numeric(data['educ'],errors='coerce')
 
 
 
+spyderdat = pd.read_csv("/home/curtis/Downloads/HistoricalQuotes.csv")    # Obviously specific to my system; set to                                                                        # location on your machine
+spyderdat = pd.DataFrame(spyderdat.loc[:, ["open", "high", "low", "close", "close"]]
+                        .iloc[1:].as_matrix(),
+                         index=pd.DatetimeIndex(spyderdat.iloc[1:, 0]),
+                         columns=["Open", "High", "Low", "Close", "Adj Close"])
+            .sort_index()
+spyder = spyderdat.loc[start:end]
+stocks = stocks.join(spyder.loc[:, "Adj Close"])
+                .rename(columns={"Adj Close": "SPY"})
+
+
+
 
 	
 #----------------------------------------------------------------------------------------------------------
