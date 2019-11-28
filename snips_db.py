@@ -1,3 +1,13 @@
+
+
+
+#--------------------------------------------------------------------------------------------------------
+def to_csv(self, fname):
+	if fname[-4:] == '.csv':
+    		fname = fname[:len(fname)-4]
+	return None
+
+#--------------------------------------------------------------------------------------------------------
 #read in latest_dates
 if not(os.path.isfile(directory+'\\latest_dates\\latest_dates.csv')):
     print 'No latest_date.csv file found'
@@ -230,6 +240,13 @@ def create_directories(self):
         if not os.path.exists(self.directory_pair):
             os.makedirs(self.directory_pair)		
 
+#-----------------------------------------------------------------------------------------------------------------------	
+def make_dir(date):
+    s_dir = os.getcwd() + '/' + date.strftime('%Y-%m-%d')
+    if not os.path.exists(s_dir):
+        os.makedirs(s_dir)
+    return s_dir
+						
 #-----------------------------------------------------------------------------------------------------------------------	
 
 import pandas as pd
