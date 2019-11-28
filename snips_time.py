@@ -13,7 +13,13 @@ for ii, mo in enumerate(months, 1): # iterate over months and flag if match foun
     if more.search(tmp):
         self.month = ii
         break
+	
 
+# -------------------------------------------------------------------------------------------------------------
+
+# Only keep quotes at trading times
+df001 = df001.set_index('Date_Time')
+df001 = df001.between_time('9:30','16:00',include_start=True, include_end=True)
 
 # -------------------------------------------------------------------------------------------------------------
 
