@@ -312,6 +312,13 @@ SPX500.count(), SPY_TICK.describe()
 
 
 
+        self.stocks = self.df['Symbol_Root'].unique()
+        for stock in self.stocks:
+            # Do aggregation
+            stock_rows = self.df.loc[self.df['Symbol_Root'] == stock]
+
+
+
 
 #making subsets
 	USDCHF[USDCHF.Volume>200]
@@ -341,7 +348,15 @@ SPX500.count(), SPY_TICK.describe()
 
 	mask = df_results[pnl_col_name] > 0
 	all_winning_trades = df_results[pnl_col_name].loc[mask] 
+	
+	
+	# Select rows where Bid_Price>0 and Ask_Price>0 and Bid_Size>0 and Ask_Size>0
+        training = training.ix[(training['Bid_Price']>0) | (training['Ask_Price']>0)]
+        training = training.ix[(training['Bid_Size']>0) | (training['Ask_Size']>0)]
 
+	# Only keep quotes at trading times
+	df001 = df001.set_index('Date_Time')
+	df001 = df001.between_time('9:30','16:00',include_start=True, include_end=True)
 
 
 	''' Seperates dataframe into multiple by treatment
@@ -376,10 +391,20 @@ SPX500.count(), SPY_TICK.describe()
 	# ... the same one-liner
 	df[df["gender"] == "M"][["name", "count"]].groupby("name").sum().sort_values("count", ascending=False).head(10)
 	
-	
+
+# Example of filtering the dataframe --------------------------------------------------------------------------------------
+    def processData(self, date, major):
+        impactful_data = self.data_df.loc[self.data_df['impact'] == 3].copy()
+        impactful_data = self.data_df
+        impactful_data['timestamp_af'] = impactful_data['timestamp'].apply(lambda x: self.utc_to_local(x))
+        impactful_data['date'] = impactful_data['timestamp_af'].apply(lambda x: x[:10])
+        impactful_data = impactful_data.loc[impactful_data['date'] == date].copy()
+        impactful_data['major'] = impactful_data['economy'].apply(lambda x: True if x in major else False)
+        impactful_data = impactful_data.loc[impactful_data['major'] == True].copy()
+        self.final_data = impactful_data[['economy', 'name','impact','timestamp_af']].copy()	
 
 
-# Example of filtering the dataframe ----------------------------------------------------------
+# Example of filtering the dataframe --------------------------------------------------------------------------------------
 	# Source: https://github.com/zbirnba1/quantative-finance/blob/master/src/recommended_portfolios.py
 	qvdf=qvdf[pd.to_datetime(qvdf['release_date']).dt.date<last_valid_day.date()]
 	qvdf=qvdf[pd.to_datetime(qvdf['end_date']).dt.date>=last_valid_day.date()-relativedelta(months=6)]
