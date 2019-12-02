@@ -331,6 +331,7 @@ SPX500.count(), SPY_TICK.describe()
 	NQ100.loc['GOOG']
 	temp_df['Hurra'][1:3]
 	temp_df.iloc[1]
+	market_data_250 = market_data.iloc[:250] # Select the first 250 rows
 	NQ100.at['FB','Last']
 
 	df[df["gender"] == "M"]["name"].nunique() # Unique names for male
