@@ -1,3 +1,7 @@
+segments.seg_length.hist(bins=500)
+segments.seg_length.apply(np.log).hist(bins=500)
+
+
 # CREATE SERIES OR DATAFRAME (many series) --------------------------------------------------------------------
 
 # Series creation
