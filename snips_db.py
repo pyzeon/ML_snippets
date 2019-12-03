@@ -1,31 +1,30 @@
+# names of csvs
+# gets the list of tickers in the directory
+# read txt
+# download the zip file with many txts and move the data to 1 csv
+# divide text (csv or ...) to small files with defined number of lines
+# Load lines from csv file
+# check existing and create txts for every ticker
 # update csv from the latest date to today
 # create folder with curr date
 # check latest data in file
 # read all needed csvs from zip		
 
+# from MongoDB to excel
+# get last date of data from Postgres DB
+
 
 #--------------------------------------------------------------------------------------------------------
-def to_csv(self, fname):
-	if fname[-4:] == '.csv':
-    		fname = fname[:len(fname)-4]
-	return None
-
-#--------------------------------------------------------------------------------------------------------
-#read in latest_dates
-if not(os.path.isfile(directory+'\\latest_dates\\latest_dates.csv')):
-    print 'No latest_date.csv file found'
-    print 'program terminated'
-    return        
+# names of csvs
+if fname[-4:] == '.csv':
+	fname = fname[:len(fname)-4]
+	    
 
 #--------------------------------------------------------------------------------------------------------
 # gets the list of tickers in the directory
 
-import os
-import re
-
 def get_list_tickers_in_dir(directory=None):
     start_dir = os.getcwd()
-
     if directory == None:
         directory = start_dir
         
@@ -33,8 +32,7 @@ def get_list_tickers_in_dir(directory=None):
     TCKRS=[]
     for ls in listdir:
         if not ls.endswith('.csv'):
-            continue
-        
+            continue        
         check = re.match("[A-Z]*?\.[A-Z].",ls)
         if check==None:
             continue
@@ -45,55 +43,7 @@ def get_list_tickers_in_dir(directory=None):
     return (TCKRS, listdir) 
 
 #--------------------------------------------------------------------------------------------------------
-def get_csv_file_list(TCKR,listdir, directory=None):
-    start_dir = os.getcwd() #save start dir
-    if directory==None:
-        directory = start_dir    
-    os.chdir(directory)
-    
-    if listdir==0: #enables not entering valid listdir
-        listdir = os.listdir(directory)
-        
-    ls = str(listdir)
-        
-    #search for single run files    
-    check = re.search('\''+TCKR+'\.[0-9]*\.csv\', ',ls)
-    if check == None:
-        print 'Error: ticker='+TCKR+' single date csv not found in:'
-        print directory
-        return 'no tickers'
-    files=[]
-    while check !=None:
-        s = str(check.group())
-        s=s.replace("'","")
-        s=s.replace(", ","")
-        files.append(s)
-        ls=ls.replace(check.group(),'xxxxx, ',1)  #replace 1st instance of filename wit xxxxx          
-        check = re.search("\'"+TCKR+"\.[0-9]*\.csv\', ",ls)     
-    
-    os.chdir(start_dir)
-    return files
-
-#--------------------------------------------------------------------------------------------------------
-
-
-
-f = open("myfile", "w") # creation of file object, in the current working dir in write mode
-f.write("This is the first test line in the fiele. \n")
-f.write ("And this is the second and probably the last line. \n")
-f.close()
-
-
-print("a","b","c", file=open("testfile.txt","w"))
-
-
-f=open("myfile","r")
-line1 = f.readline()
-line2 = f.readline()
-f.close()
-print(line1, line2)
-
-#--------------------------------------------------------------------------------------------------------
+# read txt
 
 filename = "myfile.txt"
 with open(filename, "r") as f: # automaticall close the file in the end
@@ -112,37 +62,19 @@ finally:
     f.close()
 
 #--------------------------------------------------------------------------------------------------------
-
-'''
-Short function using Pandas to export data from MongoDB to excel
-'''
-import pandas as pd
-from pymongo import MongoClient
-
+# from MongoDB to excel
 # Connectio URI can be in shape mongodb://<username>:<password>@<ip>:<port>/<authenticationDatabase>')
-client = MongoClient('mongodb://localhost')
+client = pymongo.MongoClient('mongodb://localhost')
 
 def export_to_excel(name, collection, database):
-    '''
-    save collection from MongoDB as .xlsx file, name of file is argument of function 
-    collection <string> is name of collection 
-    database <string> is name of database
-    '''
     data = list(client[database][collection].find({},{'_id':0}))
     df =  pd.DataFrame(data)
-    #writer = pd.ExcelWriter('{}.xlsx'.format(name), engine='xlsxwriter')
     df.to_excel('{}.xlsx'.format(name)') #writer, sheet_name='Sheet1')
-    #writer.save()
-
 
 #--------------------------------------------------------------------------------------------------------
-
+# get last date of data from Postgres DB
 def fetch_last_day_mth(year_, conn):
-    """
-    return date of the last day of data we have for a given year in our Postgres DB. 
-    conn: a Postgres DB connection object
-    """  
-    cur = conn.cursor()
+    cur = conn.cursor() # conn: a Postgres DB connection object
     SQL =   """
             SELECT MAX(date_part('day', date_price)) FROM daily_data
             WHERE date_price BETWEEN '%s-12-01' AND '%s-12-31'
@@ -153,8 +85,9 @@ def fetch_last_day_mth(year_, conn):
     last_day = int(data[0][0])
     return last_day
 
+		
 #--------------------------------------------------------------------------------------------------------
-# download the zip file and saved it to our computer
+# download the zip file with many txts and move the data to 1 csv
 import requests
 url = "https://www.ssa.gov/oact/babynames/names.zip"
 with requests.get(url) as response:
@@ -183,13 +116,11 @@ csv.writer(open("data.csv", "w", newline="", # We save the data list into a csv 
                 # ...since it is faster as it does it in bulk instead of one row at a time.
 
 #--------------------------------------------------------------------------------------------------------
-
-'''divide text (csv or ...) to small files with defined number of lines'''
-import os
+# divide text (csv or ...) to small files with defined number of lines
 
 def splitter(name, parts = 100000):
     # make dir for files
-    if not os.path.exists(name.split('.')[0]):
+    if not os.path.exists(name.split('.')[0]): 
         os.makedirs(name.split('.')[0])
     f = open(name, 'r', errors = 'ignore')
     lines = f.readlines()
@@ -203,9 +134,9 @@ def splitter(name, parts = 100000):
     i += parts
 
 #-----------------------------------------------------------------------------------------------------------------------
-
-def read_line_from_file(filename):
-    """Load lines from csv file"""
+# Load lines from csv file
+		
+def read_line_from_file(filename):    
     lines = []
     with open(filename, 'r') as f:
         for line in f:
@@ -215,7 +146,7 @@ def read_line_from_file(filename):
     return lines
 
 #-----------------------------------------------------------------------------------------------------------------------	
-
+# check existing and create txts for every ticker		
 if os.path.exists('{}'.format(path)):
 	response = input('A database with that path already exists. Are you sure you want to proceed? [Y/N] ')
 	if response == 'Y':
@@ -232,20 +163,8 @@ os.makedirs(self.trades_path)
 for name in names:
 	with open(self.trades_path + 'trades_{}.txt'.format(name), 'w') as trades_file:
 		trades_file.write('sec,nano,name,side,shares,price\n')
-
-#-----------------------------------------------------------------------------------------------------------------------	
-
-def create_directories(self):
-        main_directory = "PairsResults"+self.params
-        
-        if not os.path.exists(main_directory):
-            os.makedirs(main_directory)
-        if not os.path.exists(self.directory_pair):
-            os.makedirs(self.directory_pair)		
-
 					
 #-----------------------------------------------------------------------------------------------------------------------	
-
 # update csv from the latest date to today
 
 DATE_FORMAT = "%Y-%m-%d"
