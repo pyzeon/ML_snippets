@@ -1,4 +1,7 @@
-
+# update csv from the latest date to today
+# create folder with curr date
+# check latest data in file
+# read all needed csvs from zip		
 
 
 #--------------------------------------------------------------------------------------------------------
@@ -240,29 +243,15 @@ def create_directories(self):
         if not os.path.exists(self.directory_pair):
             os.makedirs(self.directory_pair)		
 
-#-----------------------------------------------------------------------------------------------------------------------	
-def make_dir(date):
-    s_dir = os.getcwd() + '/' + date.strftime('%Y-%m-%d')
-    if not os.path.exists(s_dir):
-        os.makedirs(s_dir)
-    return s_dir
-						
+					
 #-----------------------------------------------------------------------------------------------------------------------	
 
-import pandas as pd
-import os
+# update csv from the latest date to today
 
 DATE_FORMAT = "%Y-%m-%d"
 
-def file_exists(fn):
-    exists = os.path.isfile(fn)
-    if exists:
-        return 1
-    else:
-        return 0
-
-def write_to_file(exists, fn, f):
-    if exists:
+def write_to_file(fn, f):
+    if os.path.isfile(fn):
         f1 = open(fn, "r")
         last_line = f1.readlines()[-1]
         f1.close()
@@ -278,46 +267,23 @@ def write_to_file(exists, fn, f):
 
 #-----------------------------------------------------------------------------------------------------------------------	
 
-import os
-
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-data_dir = os.path.join(parent_dir, 'data', 'sr')
-if not os.path.isdir(data_dir):
-    os.makedirs(data_dir)
-
-#-----------------------------------------------------------------------------------------------------------------------	
-import os
-import datetime as dt
-
-if date == None:
-    date = dt.date.today()
-
+# create folder with curr date in curr directory
+date = datetime.date.today()
 s_dir = os.getcwd() + '/' + date.strftime('%Y-%m-%d')
 if not os.path.exists(s_dir):
     os.makedirs(s_dir)
-
-#-----------------------------------------------------------------------------------------------------------------------	
-
-import os
-os.getcwd()
-print(os.getcwd())
-		
 		
 #-----------------------------------------------------------------------------------------------------------------------			
-def get_google_days(TCKR):
-    path='D:\\...\\'+TCKR+'.combined.csv'
-    if os.path.isfile(path):        
-        df = pd.read_csv(path,index_col=0,header=0) 
-        latest_date=df[df.index==max(df.index)]['DATE']
-        latest= pd.datetime.strptime(latest_date[0],'%Y-%m-%d')
-        ndays = pd.datetime.today().date()-latest.date()
-        return str(ndays.days) + 'd'
-    else:
-        return '100d'		
-		
+# check latest data in file
+if os.path.isfile(path):        
+	df = pd.read_csv(path,index_col=0,header=0) 
+	latest_date=df[df.index==max(df.index)]['DATE']
+	latest= pd.datetime.strptime(latest_date[0],'%Y-%m-%d')
+	ndays = pd.datetime.today().date()-latest.date()
+	return str(ndays.days) + 'd'		
 		
 #-----------------------------------------------------------------------------------------------------------------------			
-
+# read all needed csvs from zip		
 fracfocus_url='http://fracfocusdata.org/digitaldownload/fracfocuscsv.zip'
 request = requests.get(fracfocus_url)
 zip_file = zipfile.ZipFile(io.BytesIO(request.content)) #generates a ZipFile object
@@ -326,8 +292,7 @@ list_to_append_to=[]
 for file_name in list_of_file_names:
     if ((file_name.endswith('.csv')) & (key_word in file_name)):
         list_to_append_to.append(file_name)
-list_of_dfs=[pd.read_csv(zip_file.open(x), low_memory=False) 
-                for x in list_to_append_to]
+list_of_dfs=[pd.read_csv(zip_file.open(x), low_memory=False) for x in list_to_append_to]
 
 #-----------------------------------------------------------------------------------------------------------------------			
 
