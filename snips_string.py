@@ -1,3 +1,20 @@
+# modify strings by converting them to list
+# delete $ from string
+# different ways of printing strings
+# Convert raw string integer inputs to integers
+# Concatenate long strings elegantly across line breaks in code
+# extract US numbers from text
+# clean spaces in strings
+# getting rid of extra white spaces
+# make translation of strings
+# Convert "1k" to 1 000, "1m" to 1 000 000, etc.
+# creates dictionary from string
+# all possible letter combinations
+
+
+
+#-------------------------------------------------------------------
+# modify strings by converting them to list
 
 x ="Hello!"
 x[-2] # like in the list ...
@@ -13,16 +30,16 @@ wordList[7:]=[] # removes everything after 7th char
 wordList.reverse()
 text="".join(wordList) # turn the list back into a string
 
+#-------------------------------------------------------------------
+# delete $ from string
+df.state_bottle_retail.str.replace('$','') # 4.5*X ms: replaces the ‘$’ with a blank space for each item in the column
+df.state_bottle_retail.apply(lambda x: x.replace('$','')) # 4*X ms: pandas ‘apply’ method, which is optimized to perform operations over a pandas column
+df.state_bottle_retail.apply(lambda x: x.strip('$')) # 3*X ms: strip does one less operation: just takes out the ‘$.’
+df.state_bottle_retail = [x.strip('$') for x in df.state_bottle_retail] # 2*X ms: list comprehension
+df.state_bottle_retail = [x[1:] for x in df.state_bottle_retail] # X ms: built in [] slicing, [1:] slices each string from 2nd value till end
 
-
-x="tha basketball playear allen iverson"
-x
-x.replace("allen iverson","kobe bryant")
-x.split()
-x.split("e")
-
-
-
+#----------------------------------------------------------------------------------------------------
+# printing strings
 
 e=2.718
 x = [1, "two", 3, 4.0, ["a", "b"], (5, 6)]
@@ -33,20 +50,9 @@ print("the value of %s is: %.2f" % ("e", e)) # formatting capabilities similar t
 num_dict = {'e':2.718,'pi':3.14159}
 print("%(pi).2f - %(pi).4f - %(e).1f" % num_dict)
 
-
-
-
-
 " ".join(["a","b","c","d"])
 
-
-
-
-
-
-
-
-
+# --------------------------------------------------------------------
 # Convert raw string integer inputs to integers
 
 str_input = "1 2 3 4 5 6"
@@ -67,13 +73,13 @@ import re
 numbers = ' 123.456.7889 (123)-456-7888 (425) 465-7523 456 123-7891 111 111.1111 (222)333-4444 666 777 8888 987-654-4321'
 res = re.findall(r'\d{3}\)*?\-*?\s*?\.*?\d{3}\-*?\s*?\.*?\d{3}', numbers)		
 
-
 #--------------------------------------------------------------------------------------------------------
 # clean spaces in strings
 		
 import re
-def clean(string): # cleans string from empty spaces on the start and on the end
-    # input is : "   Hello World    " and output is "Hello World"
+def clean(string): # cleans from empty spaces on start and on end
+    # input is : "   Hello World    " 
+    # output is "Hello World"
 		
     first = 0
     for item in string:
@@ -105,6 +111,7 @@ def clean3(string): # clean string from rebundant spaces
     except:
 return string
 		
+#---------------------------------------------------------------------
 # getting rid of extra white spaces
 import string
 string.whitespace # white spaces are not only spaces, but e.g. new line, tab, etc.
@@ -112,28 +119,24 @@ string.whitespace # white spaces are not only spaces, but e.g. new line, tab, et
 x="\n tha basketball playear allen iverson \t   "
 x
 x.strip() # any whitespaces in the beginning and end are removed
-x.rstrip() # rstrip removes whitespace only at the right end of the original string
+x.rstrip() # rstrip removes whitespace only at the right end
 
-# The most common use for these functions is as a quick way to clean up strings...
+# The common use for these functions is to clean up strings...
 # ... that have just been read in: e.g. reading lines from files ...
-# ... because Python always reads in an entire line, including the trailing newline, 
+# ... as Python reads in an entire line, incl. the trailing newline, 
 # "rstrip" is a convenient way to get rid of it.
 
 #--------------------------------------------------------------------------------------------------------
+# make translation of strings
 
-# from package "string"
 x = "~x ^ (y % z)" 
-table = x.maketrans("~^()","!&[]") 
+table = x.maketrans("~^()","!&[]") # from package "string"
 x.translate(table)
 
 #--------------------------------------------------------------------------------------------------------
-
-import re
+# Convert "1k" to 1 000, "1m" to 1 000 000, etc.
 
 def resolve_value(value):
-    """
-    Convert "1k" to 1 000, "1m" to 1 000 000, etc.
-    """
     if value is None:
         return None
     tens = dict(k=10e3, m=10e6, b=10e9, t=10e12)
@@ -147,7 +150,7 @@ def resolve_value(value):
      return int(float(factor)*tens[exp.lower()])
 
 #--------------------------------------------------------------------------------------------------------
-
+# creates dictionary from string
 some_string = "snowboard"
 some_dict = {}
 for i, some_dict[i] in enumerate(some_string):
@@ -155,7 +158,7 @@ for i, some_dict[i] in enumerate(some_string):
 some_dict
 
 #--------------------------------------------------------------------------------------------------------
-
+# all possible letter combinations
 """
 Given a digit string, return all possible letter
 combinations that the number could represent.
