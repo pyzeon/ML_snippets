@@ -1,5 +1,6 @@
 # modify strings by converting them to list
 # delete $ from string
+# skip strings with //
 # different ways of printing strings
 # Convert raw string integer inputs to integers
 # Concatenate long strings elegantly across line breaks in code
@@ -10,6 +11,8 @@
 # Convert "1k" to 1 000, "1m" to 1 000 000, etc.
 # creates dictionary from string
 # all possible letter combinations
+# fuzzy matching
+# the most often occuring names using collection.Counter
 
 
 
@@ -37,6 +40,24 @@ df.state_bottle_retail.apply(lambda x: x.replace('$','')) # 4*X ms: pandas ‘ap
 df.state_bottle_retail.apply(lambda x: x.strip('$')) # 3*X ms: strip does one less operation: just takes out the ‘$.’
 df.state_bottle_retail = [x.strip('$') for x in df.state_bottle_retail] # 2*X ms: list comprehension
 df.state_bottle_retail = [x[1:] for x in df.state_bottle_retail] # X ms: built in [] slicing, [1:] slices each string from 2nd value till end
+
+
+#----------------------------------------------------------------------------------------------------
+# skip strings with //
+string_from_file = """
+// Author: ...
+// License: ...
+//
+// Date: ...
+
+Actual content...
+"""
+
+import itertools
+for line in itertools.dropwhile(lambda line: line.startswith("//"), string_from_file.split("\n")):
+	print(line)
+
+
 
 #----------------------------------------------------------------------------------------------------
 # printing strings
@@ -187,3 +208,28 @@ def letter_combinations(digits):
                 tmp.append(an + char)
         ans = tmp
     return ans
+
+#--------------------------------------------------------------------------------------------------------
+# fuzzy matching with Levenshtein distance
+
+import difflib
+difflib.get_close_matches('appel', ['ape', 'apple', 'peach', 'puppy'], n=2) # n specifies max num of matches to be returned
+# returns ['apple', 'ape']
+
+
+#--------------------------------------------------------------------------------------------------------
+# the most often occuring names using collection.Counter
+from collections import Counter
+
+cheese = ["gouda", "brie", "feta", "cream cheese", "feta", "cheddar",
+          "parmesan", "parmesan", "cheddar", "mozzarella", "cheddar", "gouda",
+          "parmesan", "camembert", "emmental", "camembert", "parmesan"]
+
+cheese_count = Counter(cheese) # Counter is just a dictionary that maps items to number of occurrences
+# use update(more_words) method to easily add more elements to counter
+
+print(cheese_count.most_common(3))
+# Prints: [('parmesan', 4), ('cheddar', 3), ('gouda', 2)]
+
+
+
