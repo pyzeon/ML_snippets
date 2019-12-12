@@ -79,13 +79,6 @@ pandas.read_csv('http://www.nasdaq.com/investing/etfs/etf-finder-results.aspx?do
 
 calls_df, = pd.read_html("http://apps.sandiego.gov/sdfiredispatch/", header=0, parse_dates=["Call Date"])
 
-#errors='coerce' means that we force the conversation.
-#Values that can not be converted are set to NaN ("Not a Number")
-data['educ'] = pd.to_numeric(data['educ'],errors='coerce') 
-
-
-
-
 
 spyderdat = pd.read_csv("/home/curtis/Downloads/HistoricalQuotes.csv")    # Obviously specific to my system; set to                                                                        # location on your machine
 spyderdat = pd.DataFrame(spyderdat.loc[:, ["open", "high", "low", "close", "close"]]
@@ -215,7 +208,16 @@ def top_1(arr):
             continue
     
     return result
-    
+
+# the most often occuring names using collection.Counter
+from collections import Counter
+cheese = ["gouda", "brie", "feta", "cream cheese", "feta", "cheddar",
+          "parmesan", "parmesan", "cheddar", "mozzarella", "cheddar", "gouda",
+          "parmesan", "camembert", "emmental", "camembert", "parmesan"]
+cheese_count = Counter(cheese) # Counter is just a dictionary that maps items to number of occurrences
+# use update(more_words) method to easily add more elements to counter
+print(cheese_count.most_common(3))
+# Prints: [('parmesan', 4), ('cheddar', 3), ('gouda', 2)]
 
 
 	
@@ -257,6 +259,10 @@ SPX500.count(), SPY_TICK.describe()
 # rename column	
 	NQ100.rename(columns={'lastsale':'Last'}) 
 
+	
+#errors='coerce' means that we force the conversation.
+#Values that can not be converted are set to NaN ("Not a Number")
+data['educ'] = pd.to_numeric(data['educ'],errors='coerce') 
 
 # Deleting
 	UC=USDCHF.dropna()
