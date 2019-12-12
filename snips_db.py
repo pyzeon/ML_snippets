@@ -1,6 +1,7 @@
 # names of csvs
 # gets the list of tickers in the directory
 # read txt
+# skip lines when reading text
 # download the zip file with many txts and move the data to 1 csv
 # divide text (csv or ...) to small files with defined number of lines
 # Load lines from csv file
@@ -60,6 +61,23 @@ except Exception as e:
     raise e
 finally:
     f.close()
+
+#--------------------------------------------------------------------------------------------------------
+# skip lines when reading text
+string_from_file = """
+// Author: ...
+// License: ...
+//
+// Date: ...
+
+Actual content...
+"""
+
+import itertools
+for line in itertools.dropwhile(lambda line: line.startswith("//"), string_from_file.split("\n")):
+	print(line)
+
+
 
 #--------------------------------------------------------------------------------------------------------
 # from MongoDB to excel
