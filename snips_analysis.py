@@ -1,29 +1,20 @@
-segments.seg_length.hist(bins=500)
-segments.seg_length.apply(np.log).hist(bins=500)
+import pandas as pd
+import numpy as np
 
 
-# CREATE SERIES OR DATAFRAME (many series) --------------------------------------------------------------------
+# Series creation
+# Create dataframes 
+# quickly create a dataframe for testing
+# reading csv with pd
+# Selecting certain elements from series
+
+
 
 # Series creation
 	Series([1,2,3,4]), Series([3,4,5,6,7],index=['a','b','c','d','e']), Series([3]*5), np.zeros(10)
 	Series(np.arange(4,9)) # using the numpy function
 	Series(np.linspace(0,9,5)) # allows to specify the number of values to be created btw boundaries
 
-	pd.date_range('2016-08-01','2017-08-01')
-	dates = pd.date_range('2016-08-01','2017-08-01', freq='M')
-	idx = pd.date_range("2018-1-1",periods=20,freq="H")
-	ts = pd.Series(range(len(idx)),index=idx)
-	ts.resample("2H").mean()
-
-	pd.Series(range(10),index=pd.date_range("2000",freq="D",periods=10))
-
-# dummy datasets with dates
-	import pandas.util.testing as tm
-	tm.N, tm.K = 5,3
-	tm.makeTimedeltaIndex(), tm.makeTimeSeries(), tm.makePeriodSeries()
-	tm.makeDateIndex(), tm.makePeriodIndex(), tm.makeObjectSeries()
-
-# random series
 	Series(np.random.normal(size=5))
 	np.random.randint(50,101,len(dates))
 
@@ -31,30 +22,11 @@ segments.seg_length.apply(np.log).hist(bins=500)
 	tm.makeCustomIndex(nentries=4,nlevels=2), tm.makeFloatIndex(), tm.makeIntIndex()
 	tm.makeMultiIndex(), tm.makeRangeIndex(), tm.makeIntervalIndex()
 
-# string series
-	Series(list('abcde'))
-	random.choices(string.ascii_lowercase,k=5) # generates k random letters
-	tm.makeStringIndex()
 
 # Create dataframes 
 	dates=pd.date_range('2016-08-01','2017-08-01')
 	s = Series(np.random.randint(50,60,size=len(dates)))
 	temp_df=pd.DataFrame({'Hurra':dates, 'Pinguin':s})
-
-	from itertools import product
-	datecols = ['year', 'month', 'day']
-	df = pd.DataFrame(list(product([2016,2017],[1,2],[1,2,3])),columns = datecols)
-	df['data']=np.random.randn(len(df))
-	df.index = pd.to_datetime(df[datecols])
-
-	
-        open_orders = []
-        for order in orders:
-            if order['state'] == 'queued':
-                open_orders.append(order)
-		
-	queried_symbols = [ fundamentals['symbol'] for fundamentals in queried_fundamentals ]
-	
 	
 	
 # quickly create a dataframe for testing
@@ -62,7 +34,6 @@ segments.seg_length.apply(np.log).hist(bins=500)
 	tm.N, tm.K = 5,3
 	tm.makeDataFrame(), tm.makeMixedDataFrame(), tm.makeTimeDataFrame(freq="W")
 
-np.random.random((3,3,3)) # Create a 3x3x3 array with random values	
 
 
 
@@ -80,7 +51,7 @@ pandas.read_csv('http://www.nasdaq.com/investing/etfs/etf-finder-results.aspx?do
 calls_df, = pd.read_html("http://apps.sandiego.gov/sdfiredispatch/", header=0, parse_dates=["Call Date"])
 
 
-spyderdat = pd.read_csv("/home/curtis/Downloads/HistoricalQuotes.csv")    # Obviously specific to my system; set to                                                                        # location on your machine
+spyderdat = pd.read_csv("/home/curtis/Downloads/HistoricalQuotes.csv")
 spyderdat = pd.DataFrame(spyderdat.loc[:, ["open", "high", "low", "close", "close"]]
                         .iloc[1:].as_matrix(),
                          index=pd.DatetimeIndex(spyderdat.iloc[1:, 0]),
@@ -93,9 +64,7 @@ stocks = stocks.join(spyder.loc[:, "Adj Close"])
 
 
 
-	
-#----------------------------------------------------------------------------------------------------------
-# Describe and actions with series ------------------------------------------------------------------------
+# Selecting certain elements from series --------------------------------------
 
 s = Series(np.random.randint(10,100,size =30))
 s[3], s[[1,3]], s[3:17:4] # step 4
@@ -111,6 +80,7 @@ line.sample(n=3)
 line.sample(frac=0.05) #selects 5% of data
 
 np.nonzero([1,2,0,0,4,0]) # find indices of non-zero elements
+
 
 s= Series(np.random.randint(50,60,size=20))
 s.values, s.index
@@ -293,6 +263,11 @@ data['educ'] = pd.to_numeric(data['educ'],errors='coerce')
 	d2 = {'b': 2}
 	d1.update(d2)
 	print(d1)
+
+	ho = ['ON']  # overnight
+	ho.extend([str(i) + 'W' for i in range(1,4)])  # weekly tenors
+	ho.extend([str(i) + 'M' for i in range(1,12)])  # monthly tenors
+	ho.extend([str(i) + 'Y' for i in range(1,51)])  # yearly tenors
 
 	# Adding anomalies to df
 	anomaly_dictionary={80: 3.1, 200: 3, 333: 1, 600: 2.6, 710: 2.1}

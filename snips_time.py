@@ -1,6 +1,31 @@
 
 
 
+	pd.date_range('2016-08-01','2017-08-01')
+	dates = pd.date_range('2016-08-01','2017-08-01', freq='M')
+	idx = pd.date_range("2018-1-1",periods=20,freq="H")
+	ts = pd.Series(range(len(idx)),index=idx)
+	ts.resample("2H").mean()
+
+	pd.Series(range(10),index=pd.date_range("2000",freq="D",periods=10))
+
+
+
+# dummy datasets with dates
+	import pandas.util.testing as tm
+	tm.N, tm.K = 5,3
+	tm.makeTimedeltaIndex(), tm.makeTimeSeries(), tm.makePeriodSeries()
+	tm.makeDateIndex(), tm.makePeriodIndex(), tm.makeObjectSeries()
+
+
+
+	from itertools import product
+	datecols = ['year', 'month', 'day']
+	df = pd.DataFrame(list(product([2016,2017],[1,2],[1,2,3])),columns = datecols)
+	df['data']=np.random.randn(len(df))
+	df.index = pd.to_datetime(df[datecols])
+
+
 # -------------------------------------------------------------------------------------------------------------
 
 day = re.compile('[1-3][0-9]?') # day regex

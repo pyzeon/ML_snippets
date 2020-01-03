@@ -1,3 +1,4 @@
+# string series
 # modify strings by converting them to list
 # delete $ from string
 # skip strings with //
@@ -14,6 +15,12 @@
 # fuzzy matching
 # the most often occuring names using collection.Counter
 
+
+#-------------------------------------------------------------------
+# string series
+	Series(list('abcde'))
+	random.choices(string.ascii_lowercase,k=5) # generates k random letters
+	tm.makeStringIndex()
 
 
 #-------------------------------------------------------------------
