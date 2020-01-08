@@ -506,9 +506,6 @@ def parse_thisdate(text: str) -> datetime.date:
 
 
 
-
-
-
 start=pd.Timestamp("2018-01-06 00:00:00")
 pd.date_range(start, periods=10,freq="2h20min")
 
@@ -545,6 +542,95 @@ pd.date_range(start, periods=10,freq="2h20min")
 rng=pd.date_range(start,end,freq="D")
 ts=pd.Series(np.random.randn(len(rng)),index=rng)
 ts.shift(2)[1]
+
+# -------------------------------------------------------------------------------------------------------------
+
+def secs2time(e):
+    """secs2time - convert epoch to datetime.
+    >>> d = secs2time(1497499200)
+    >>> d
+    datetime.datetime(2017, 6, 15, 4, 0)
+    >>> d.strftime("%Y%m%d-%H:%M:%S")
+    '20170615-04:00:00'
+    """
+    w = time.gmtime(e)
+    return datetime(*list(w)[0:6])
+
+
+
+# -------------------------------------------------------------------------------------------------------------
+
+
+def granularity_to_time(s):
+    """convert a named granularity into seconds.
+    get value in seconds for named granularities: M1, M5 ... H1 etc.
+    >>> print(granularity_to_time("M5"))
+    300
+    """
+    mfact = {
+        'S': 1,
+        'M': 60,
+        'H': 3600,
+        'D': 86400,
+        'W': 604800,
+    }
+    try:
+        f, n = re.match("(?P<f>[SMHDW])(?:(?P<n>\d+)|)", s).groups()
+        n = n if n else 1
+        return mfact[f] * int(n)
+
+    except Exception as e:
+        raise ValueError(e)
+
+# -------------------------------------------------------------------------------------------------------------
+
+from holidays import UnitedStates
+    def is_trading_day(self, timestamp):
+        """Tests whether markets are open on a given day."""
+
+        # Markets are closed on holidays.
+        if timestamp in UnitedStates():
+            self.logs.debug("Identified holiday: %s" % timestamp)
+            return False
+
+        # Markets are closed on weekends.
+        if timestamp.weekday() in [5, 6]:
+            self.logs.debug("Identified weekend: %s" % timestamp)
+            return False
+
+        # Otherwise markets are open.
+        return True
+
+# -------------------------------------------------------------------------------------------------------------
+from pytz import timezone
+from pytz import utc
+
+# We're using NYSE and NASDAQ, which are both in the easters timezone.
+MARKET_TIMEZONE = timezone("US/Eastern")
+
+    def utc_to_market_time(self, timestamp):
+        """Converts a UTC timestamp to local market time."""
+
+        utc_time = utc.localize(timestamp)
+        market_time = utc_time.astimezone(MARKET_TIMEZONE)
+
+        return market_time
+
+    def market_time_to_utc(self, timestamp):
+        """Converts a timestamp in local market time to UTC."""
+
+        market_time = MARKET_TIMEZONE.localize(timestamp)
+        utc_time = market_time.astimezone(utc)
+
+        return utc_time
+
+    def as_market_time(self, year, month, day, hour=0, minute=0, second=0):
+        """Creates a timestamp in market time."""
+
+        market_time = datetime(year, month, day, hour, minute, second)
+        return MARKET_TIMEZONE.localize(market_time)
+
+
 
 
 
