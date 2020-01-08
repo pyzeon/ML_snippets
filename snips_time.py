@@ -18,7 +18,6 @@
 	tm.makeDateIndex(), tm.makePeriodIndex(), tm.makeObjectSeries()
 
 
-
 	from itertools import product
 	datecols = ['year', 'month', 'day']
 	df = pd.DataFrame(list(product([2016,2017],[1,2],[1,2,3])),columns = datecols)
@@ -175,6 +174,96 @@ def trading_hours(data):
         test.append( dat )
     return test
 
+# -------------------------------------------------------------------------------------------------------------
+# check if market is open
+
+import logging
+import os
+import inspect
+import sys
+import time
+import pytz
+from enum import Enum
+from datetime import datetime
+from govuk_bank_holidays.bank_holidays import BankHolidays
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)
+
+from Utility.Utils import Utils
+
+
+class TimeAmount(Enum):
+    """Types of amount of time to wait for
+    """
+
+    SECONDS = 0
+    NEXT_MARKET_OPENING = 1
+
+
+class TimeProvider:
+    """Class that handle functions dependents on actual time
+    such as wait, sleep or compute date/time operations
+    """
+
+    def __init__(self):
+        logging.debug("TimeProvider __init__")
+
+    def is_market_open(self, timezone):
+        """
+        Return True if the market is open, false otherwise
+            - **timezone**: string representing the timezone
+        """
+        tz = pytz.timezone(timezone)
+        now_time = datetime.now(tz=tz).strftime("%H:%M")
+        return BankHolidays().is_work_day(datetime.now(tz=tz)) and Utils.is_between(
+            str(now_time), ("07:55", "16:35")
+        )
+
+    def get_seconds_to_market_opening(self, from_time):
+        """Return the amount of seconds from now to the next market opening,
+        taking into account UK bank holidays and weekends"""
+        today_opening = datetime(
+            year=from_time.year,
+            month=from_time.month,
+            day=from_time.day,
+            hour=8,
+            minute=0,
+            second=0,
+            microsecond=0,
+        )
+
+        if from_time < today_opening and BankHolidays().is_work_day(from_time.date()):
+            nextMarketOpening = today_opening
+        else:
+            # Get next working day
+            nextWorkDate = BankHolidays().get_next_work_day(date=from_time.date())
+            nextMarketOpening = datetime(
+                year=nextWorkDate.year,
+                month=nextWorkDate.month,
+                day=nextWorkDate.day,
+                hour=8,
+                minute=0,
+                second=0,
+                microsecond=0,
+            )
+        # Calculate the delta from from_time to the next market opening
+        return (nextMarketOpening - from_time).total_seconds()
+
+    def wait_for(self, time_amount_type, amount=-1):
+        """Wait for the specified amount of time.
+        An TimeAmount type can be specified
+        """
+        if time_amount_type is TimeAmount.NEXT_MARKET_OPENING:
+            amount = self.get_seconds_to_market_opening(datetime.now())
+        elif time_amount_type is TimeAmount.SECONDS:
+            if amount < 0:
+                raise ValueError("Invalid amount of time to wait for")
+        logging.info("Wait for {0:.2f} hours...".format(amount / 3600))
+        time.sleep(amount)
+
+
 
 
 # -------------------------------------------------------------------------------------------------------------
@@ -295,6 +384,103 @@ cal_sse.advance_date('20170427', '-1m', return_string=True) # => '2017-03-27'
 cal_sse.schedule('2018-01-05', '2018-02-01', '1w', return_string=True, date_generation_rule=2) # => ['2018-01-05', '2018-01-12', '2018-01-19', '2018-01-26', '2018-02-01']
 
 
+# -------------------------------------------------------------------------------------------------------------
+# reading time stamp
+def read_hhmmss(field: str) -> int:
+    """Read a HH:MM:SS field and return us since midnight."""
+    if field != "":
+        hour = int(field[0:2])
+        minute = int(field[3:5])
+        second = int(field[6:8])
+        return 1000000 * ((3600 * hour) + (60 * minute) + second)
+    else:
+        return 0
+
+
+def read_hhmmssmil(field: str) -> int:
+    """Read a HH:MM:SS:MILL field and return us since midnight."""
+    if field != "":
+        hour = int(field[0:2])
+        minute = int(field[3:5])
+        second = int(field[6:8])
+        msecs = int(field[9:])
+        return ((1000000 * ((3600 * hour) + (60 * minute) + second)) +
+                (1000 * msecs))
+    else:
+        return 0
+
+
+def read_mmddccyy(field: str) -> np.datetime64:
+    """Read a MM-DD-CCYY field and return a np.datetime64('D') type."""
+    if field != "":
+        month = int(field[0:2])
+        day = int(field[3:5])
+        year = int(field[6:10])
+        return np.datetime64(
+            datetime.date(year=year, month=month, day=day), 'D')
+    else:
+        return np.datetime64(datetime.date(year=1, month=1, day=1), 'D')
+
+
+def read_ccyymmdd(field: str) -> np.datetime64:
+    """Read a CCYYMMDD field and return a np.datetime64('D') type."""
+    if field != "":
+        year = int(field[0:4])
+        month = int(field[4:6])
+        day = int(field[6:8])
+        return np.datetime64(
+            datetime.date(year=year, month=month, day=day), 'D')
+    else:
+        return np.datetime64(datetime.date(year=1, month=1, day=1), 'D')
+
+
+def read_timestamp_msg(dt_tm: str) -> Tuple[np.datetime64, int]:
+    """Read a CCYYMMDD HH:MM:SS field."""
+    if dt_tm != "":
+        (date_str, time_str) = dt_tm.split(' ')
+        dt = read_ccyymmdd(date_str)
+        tm = read_hhmmss(time_str)
+        return dt, tm
+    else:
+        return np.datetime64(datetime.date(year=1, month=1, day=1), 'D'), 0
+
+
+def read_hist_news_timestamp(dt_tm: str) -> Tuple[np.datetime64, int]:
+    """Read a news story time"""
+    if dt_tm != "":
+        date_str = dt_tm[0:8]
+        time_str = dt_tm[8:14]
+        dt = read_ccyymmdd(date_str)
+        tm = read_hhmmss_no_colon(time_str)
+        return dt, tm
+    else:
+        return np.datetime64(datetime.date(year=1, month=1, day=1), 'D'), 0
+
+#-------------------------------------------------------------------------------------
+
+def us_since_midnight_to_time(us_dt: Union[int, np.int64]) -> datetime.time:
+    """Convert us since midnight to datetime.time with rounding."""
+    us = np.int64(us_dt)
+    assert us >= 0
+    assert us <= 86400000000
+    microsecond = us % 1000000
+    secs_since_midnight = np.floor(us / 1000000.0)
+    hour = np.floor(secs_since_midnight / 3600)
+    minute = np.floor((secs_since_midnight - (hour * 3600)) / 60)
+    second = secs_since_midnight - (hour * 3600) - (minute * 60)
+    return datetime.time(hour=int(hour),
+                         minute=int(minute),
+                         second=int(second),
+                         microsecond=int(microsecond))
+                         
+def date_us_to_datetime(dt64: np.datetime64,
+                        tm_int: Union[int, np.datetime64]) -> datetime.datetime:
+    """Convert a np.datetime64('D') and us_since midnight to datetime"""
+    dt = datetime64_to_date(dt64)
+    tm = us_since_midnight_to_time(tm_int)
+    return datetime.datetime(year=dt.year, month=dt.month, day=dt.day,
+                             hour=tm.hour, minute=tm.minute, second=tm.second,
+                             microsecond=tm.microsecond)
 
 
 
@@ -359,4 +545,6 @@ pd.date_range(start, periods=10,freq="2h20min")
 rng=pd.date_range(start,end,freq="D")
 ts=pd.Series(np.random.randn(len(rng)),index=rng)
 ts.shift(2)[1]
+
+
 

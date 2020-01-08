@@ -232,4 +232,7 @@ for file_name in list_of_file_names:
 list_of_dfs=[pd.read_csv(zip_file.open(x), low_memory=False) for x in list_to_append_to]
 
 #-----------------------------------------------------------------------------------------------------------------------			
-
+# check directories	
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir)
