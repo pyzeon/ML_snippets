@@ -94,6 +94,12 @@ lst = [40, 10, 20, 30]
 min(range(len(lst)), key=lst.__getitem__)
 
 
+a = np.array([2,4,6,9,4])
+np.argmax(a)
+np.argwhere(a==4)
+
+
+
 
 # If array, Min, Max value was given, it returns array that contains
 # values of given array which was larger than Min, and lower than Max.
@@ -496,4 +502,25 @@ def clean_allocation(str_input):
 f['allocation'] = df.allocation.map(lambda x: clean_allocation(x))
 df['name'] = df.name.map(lambda x: clean_name(x))
 df['ticker'] = df.ticker.map(lambda x: clean_ticker(x))
+
+
+# Pairwise iteration btw columns of dataframe ------------------------------------------------------------------------------
+
+from scipy.stats import ttest_ind
+from itertools import combinations
+
+N, M = 20, 4
+A = np.random.randn(N, M) + np.arange(M)/4 # generate a random array, add a small constant to each column
+df = pd.DataFrame(A) # converts numpy array to pandas df
+pairwise_pvalues = pd.DataFrame(columns=df.columns, index=df.columns, dtype=float)
+for (label1, column1), (label2, column2) in combinations(df.items(), 2):
+    pairwise_pvalues.loc[label1, label2] = ttest_ind(column1, column2)[1]
+    pairwise_pvalues.loc[label2, label1] = pairwise_pvalues.loc[label1, label2]
+pairwise_pvalues.round(3)
+
+
+
+
+
+
 
