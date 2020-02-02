@@ -1,5 +1,6 @@
 # names of csvs
 # gets the list of tickers in the directory
+# merge all csv files of the same struc in the same folder
 # read txt
 # skip lines when reading text
 # download the zip file with many txts and move the data to 1 csv
