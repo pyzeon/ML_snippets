@@ -1,2 +1,2 @@
-# ML_snippets
-collection of machine learning snippets
+# Data_analysis_snippets
+collection of snippets for data analysis
