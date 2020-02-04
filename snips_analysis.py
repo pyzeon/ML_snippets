@@ -519,7 +519,19 @@ for (label1, column1), (label2, column2) in combinations(df.items(), 2):
 pairwise_pvalues.round(3)
 
 
+# --------------------------------------------------------------------------------
+# Permutations
 
+from itertools import permutations 
+my_list = [1,2,3]
+perm = list(permutations(my_list))
+
+#(1, 2, 3)
+#(1, 3, 2)
+#(2, 1, 3)
+#(2, 3, 1)
+#(3, 1, 2)
+#(3, 2, 1)
 
 
 

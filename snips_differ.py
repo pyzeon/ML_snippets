@@ -362,3 +362,51 @@ dir(re) # which functions and attributes are defined in a module.
 import reader
 type(reader) # => module, even though on our filesystem the name “reader” refers to a directory
 reader.__file__
+
+# ------------------------------------------------------------------
+# try ... catch
+
+try:
+  df_input = df_input.loc[:,(met_model,model_params['variables'],slice(None))]
+except KeyError as e:
+  logger.warning(met_model+' not available : skipping it')
+  continue
+
+
+error_messages=[]
+try:
+    for i in pool_result:                                                                                                                                                      
+        try:
+            result = i.get()
+        except Exception as err:
+            error_messages+=(err)
+except Exception as outer_err:
+    error_messages+=(outer_err)
+
+
+if len(error_messages)==0:
+    logger.info('**************************************** ')
+    logger.info('*         Succesfully finished         * ')
+    logger.info('**************************************** ')
+else:
+    logger.error(error_messages)
+
+
+
+# -------------------------------------------------------------------------------
+#Push to G Drive
+
+#https://medium.com/@annissouames99/how-to-upload-files-automatically-to-drive-with-python-ee19bb13dda                                                   
+#pip install PyDrive is needed                                                                                                                           
+
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
+import os
+g_login = GoogleAuth()
+g_login.LocalWebserverAuth()
+drive = GoogleDrive(g_login)
+
+with open("results/file_to_be_pushed","r") as file:
+    file_drive = drive.CreateFile({'title':os.path.basename(file.name) })
+    file_drive.SetContentString(file.read())
+    file_drive.Upload()
