@@ -1,16 +1,17 @@
 # names of csvs
 # gets the list of tickers in the directory
-# merge all csv files of the same struc in the same folder
 # read txt
-# skip lines when reading text
-# download the zip file with many txts and move the data to 1 csv
-# divide text (csv or ...) to small files with defined number of lines
 # Load lines from csv file
+# skip lines when reading text
+# merge all csv files of the same struc in the same folder
+# download the zip file with many txts and move the data to 1 csv
+# read all needed csvs from zip	
+# divide text (csv or ...) to small files with defined number of lines
 # check existing and create txts for every ticker
 # update csv from the latest date to today
 # create folder with curr date
 # check latest data in file
-# read all needed csvs from zip		
+	
 
 # from MongoDB to excel
 # get last date of data from Postgres DB
@@ -44,36 +45,6 @@ def get_list_tickers_in_dir(directory=None):
     os.chdir(start_dir)
     return (TCKRS, listdir) 
 
-
-# ----------------------------------------------------------------------------------
-# Merge all csv files of the same struc in the same folder
-import glob
-import pandas as pd
-from time import strftime
-
-def folder_csv_merge(file_prefix, folder_path='', memory='no'):
-    """
-    file_prefix: if you want to add a prefix to the name of final merged file
-    folder_path: no need to declare it. string copied from file explorer to the folder where the files are
-    """
-    if folder_path == '':
-        folder_path = input('Please enter the path where the CSV files are:\n')
-    folder_path = folder_path.replace("\\","/")
-    if folder_path[:-1] != "/":
-        folder_path = folder_path + "/"
-
-    file_list = glob.glob(folder_path + '*.csv')
-
-    combined = pd.concat( [ pd.read_csv(f) for f in file_list ] )
-    if memory == 'no':
-        combined.to_csv(folder_path + 
-                        'combined_{}_{}.csv'.format(file_prefix, 
-                                            strftime("%Y%m%d-%H%M%S")), 
-                        index=False)
-    else:
-        return combined
-    print('done')
-
 #--------------------------------------------------------------------------------------------------------
 # read txt
 
@@ -93,6 +64,18 @@ except Exception as e:
 finally:
     f.close()
 
+#-----------------------------------------------------------------------------------------------------------------------
+# Load lines from csv file
+		
+def read_line_from_file(filename):    
+    lines = []
+    with open(filename, 'r') as f:
+        for line in f:
+            lines.append(line.rstrip())
+    if len(lines) > 0:
+        lines = lines[1:]
+    return lines
+
 #--------------------------------------------------------------------------------------------------------
 # skip lines when reading text
 string_from_file = """
@@ -110,31 +93,32 @@ for line in itertools.dropwhile(lambda line: line.startswith("//"), string_from_
 
 
 
-#--------------------------------------------------------------------------------------------------------
-# from MongoDB to excel
-# Connectio URI can be in shape mongodb://<username>:<password>@<ip>:<port>/<authenticationDatabase>')
-client = pymongo.MongoClient('mongodb://localhost')
+# ----------------------------------------------------------------------------------
+# Merge all csv files of the same struc in the same folder
+import glob
+import pandas as pd
+from time import strftime
 
-def export_to_excel(name, collection, database):
-    data = list(client[database][collection].find({},{'_id':0}))
-    df =  pd.DataFrame(data)
-    df.to_excel('{}.xlsx'.format(name)') #writer, sheet_name='Sheet1')
+def folder_csv_merge(file_prefix, folder_path='', memory='no'):
+    if folder_path == '':
+        folder_path = input('Please enter the path where the CSV files are:\n')
+    folder_path = folder_path.replace("\\","/")
+    if folder_path[:-1] != "/":
+        folder_path = folder_path + "/"
 
-#--------------------------------------------------------------------------------------------------------
-# get last date of data from Postgres DB
-def fetch_last_day_mth(year_, conn):
-    cur = conn.cursor() # conn: a Postgres DB connection object
-    SQL =   """
-            SELECT MAX(date_part('day', date_price)) FROM daily_data
-            WHERE date_price BETWEEN '%s-12-01' AND '%s-12-31'
-            """
-    cur.execute(SQL, [year_,year_])        
-    data = cur.fetchall()
-    cur.close()
-    last_day = int(data[0][0])
-    return last_day
+    file_list = glob.glob(folder_path + '*.csv')
 
+    combined = pd.concat( [ pd.read_csv(f) for f in file_list ] )
+    if memory == 'no':
+        combined.to_csv(folder_path + 
+                        'combined_{}_{}.csv'.format(file_prefix, 
+                                            strftime("%Y%m%d-%H%M%S")), 
+                        index=False)
+    else:
+        return combined
+    print('done')
 		
+	
 #--------------------------------------------------------------------------------------------------------
 # download the zip file with many txts and move the data to 1 csv
 import requests
@@ -164,6 +148,20 @@ csv.writer(open("data.csv", "w", newline="", # We save the data list into a csv 
                 # I prefer to use writerows() instead of writerow() ...
                 # ...since it is faster as it does it in bulk instead of one row at a time.
 
+		
+#-----------------------------------------------------------------------------------------------------------------------			
+# read all needed csvs from zip		
+fracfocus_url='http://fracfocusdata.org/digitaldownload/fracfocuscsv.zip'
+request = requests.get(fracfocus_url)
+zip_file = zipfile.ZipFile(io.BytesIO(request.content)) #generates a ZipFile object
+list_of_file_names = zip_file.namelist() #list of file names in the zip file
+list_to_append_to=[]
+for file_name in list_of_file_names:
+    if ((file_name.endswith('.csv')) & (key_word in file_name)):
+        list_to_append_to.append(file_name)
+list_of_dfs=[pd.read_csv(zip_file.open(x), low_memory=False) for x in list_to_append_to]
+
+
 #--------------------------------------------------------------------------------------------------------
 # divide text (csv or ...) to small files with defined number of lines
 
@@ -181,18 +179,6 @@ def splitter(name, parts = 100000):
             f2.write(item)
             f2.close()
     i += parts
-
-#-----------------------------------------------------------------------------------------------------------------------
-# Load lines from csv file
-		
-def read_line_from_file(filename):    
-    lines = []
-    with open(filename, 'r') as f:
-        for line in f:
-            lines.append(line.rstrip())
-    if len(lines) > 0:
-        lines = lines[1:]
-    return lines
 
 #-----------------------------------------------------------------------------------------------------------------------	
 # check existing and create txts for every ticker		
@@ -249,21 +235,35 @@ if os.path.isfile(path):
 	latest= pd.datetime.strptime(latest_date[0],'%Y-%m-%d')
 	ndays = pd.datetime.today().date()-latest.date()
 	return str(ndays.days) + 'd'		
-		
-#-----------------------------------------------------------------------------------------------------------------------			
-# read all needed csvs from zip		
-fracfocus_url='http://fracfocusdata.org/digitaldownload/fracfocuscsv.zip'
-request = requests.get(fracfocus_url)
-zip_file = zipfile.ZipFile(io.BytesIO(request.content)) #generates a ZipFile object
-list_of_file_names = zip_file.namelist() #list of file names in the zip file
-list_to_append_to=[]
-for file_name in list_of_file_names:
-    if ((file_name.endswith('.csv')) & (key_word in file_name)):
-        list_to_append_to.append(file_name)
-list_of_dfs=[pd.read_csv(zip_file.open(x), low_memory=False) for x in list_to_append_to]
 
 #-----------------------------------------------------------------------------------------------------------------------			
 # check directories	
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
+
+
+
+#--------------------------------------------------------------------------------------------------------
+# from MongoDB to excel
+# Connectio URI can be in shape mongodb://<username>:<password>@<ip>:<port>/<authenticationDatabase>')
+client = pymongo.MongoClient('mongodb://localhost')
+
+def export_to_excel(name, collection, database):
+    data = list(client[database][collection].find({},{'_id':0}))
+    df =  pd.DataFrame(data)
+    df.to_excel('{}.xlsx'.format(name)') #writer, sheet_name='Sheet1')
+
+#--------------------------------------------------------------------------------------------------------
+# get last date of data from Postgres DB
+def fetch_last_day_mth(year_, conn):
+    cur = conn.cursor() # conn: a Postgres DB connection object
+    SQL =   """
+            SELECT MAX(date_part('day', date_price)) FROM daily_data
+            WHERE date_price BETWEEN '%s-12-01' AND '%s-12-31'
+            """
+    cur.execute(SQL, [year_,year_])        
+    data = cur.fetchall()
+    cur.close()
+    last_day = int(data[0][0])
+    return last_day
