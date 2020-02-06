@@ -308,6 +308,11 @@ data['educ'] = pd.to_numeric(data['educ'],errors='coerce')
 	NQ100.insert(1,'Rand',Series(np.random.normal(size=len(NQ100)),index=NQ100.index))
 	NQ100.Randomize=NQ100.Rand
 	USDCHF['Minute_ClCl']=USDCHF.Close.diff()
+	df['CohortIndex_d'] = (df['last_active_date'] - df['signup_date']).dt.days # new column with the difference between the two dates
+
+	# split column into 2 columns
+	df[[one,two]] = df[orig].str.split(separator,expand=True)
+
 
 # Grouping
 	values=np.random.randint(0,100,5)
