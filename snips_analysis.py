@@ -538,6 +538,29 @@ perm = list(permutations(my_list))
 #(3, 1, 2)
 #(3, 2, 1)
 
+#--------------------------------------------------------------------------------
+
+# Detect and Replace Missing Values
+import pandas as pd
+import tkinter as tk
+from tkinter import filedialog, messagebox
+
+root = tk.Tk()
+messagebox.showinfo("Missing Data Imputer", "Click OK to Choose your File.")
+root.withdraw()
+file_path = filedialog.askopenfilename()
+df=pd.DataFrame(pd.read_csv(file_path))
+if df.isnull().values.any():
+    affected_cols = [col for col in df.columns if df[col].isnull().any()]
+    affected_rows = df.isnull().sum()
+    missing_list = []
+    for each_col in affected_cols:
+	missing_list.append(each_col)
+for each in missing_list:
+    df[each] = df[each].interpolate()
+
+
+
 
 
 
