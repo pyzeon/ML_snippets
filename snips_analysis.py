@@ -28,6 +28,18 @@ import numpy as np
 	s = Series(np.random.randint(50,60,size=len(dates)))
 	temp_df=pd.DataFrame({'Hurra':dates, 'Pinguin':s})
 	
+
+	# create a dataframe
+	PRICEDOMSIZE=  5  # domain size of prices
+	SIZEDOMSIZE= 100
+	def createTable(N):
+		return pd.DataFrame({
+				'pA': np.random.randint(0, PRICEDOMSIZE, N),
+				'pB': np.random.randint(0, PRICEDOMSIZE, N),
+				'sA': np.random.randint(0, SIZEDOMSIZE, N),
+				'sB': np.random.randint(0, SIZEDOMSIZE, N)})
+
+
 	
 # quickly create a dataframe for testing
 	import pandas.util.testing as tm
@@ -558,6 +570,89 @@ if df.isnull().values.any():
 	missing_list.append(each_col)
 for each in missing_list:
     df[each] = df[each].interpolate()
+
+# -------------------------------------------------------------------------------------
+
+color_list = ["green", "red", "blue", "yellow"]
+rgb = [color for color in color_list if color in('green', 'red', 'blue')]
+rgb
+
+
+green_list = [color for color in color_list if color == 'green']
+
+green_list2 = []
+for color in color_list:
+    if color == 'green':
+        green_list2.append(color)
+
+
+color_indicator = [0 if color == 'green'else 1 if color == 'red' else 2 if color == 'blue' else 3 for color in color_list]
+print(color_list)
+print(color_indicator)
+
+color_mapping = {'green': 0, 'red': 1, 'blue':2, 'yellow':3}
+color_indicator2 = [color_mapping[color] if color in color_mapping else 'na' for color in color_list]
+print(color_list)
+print(color_indicator2)
+
+word_lengths = [len(color) for color in color_list]
+word_lengths
+
+color_list1 = ['green', 'red', 'blue', 'yellow']
+color_list2 = ['dark', 'bright', 'tinted', 'glowing']
+
+color_matrix = [[color2 + ' ' + color1 for color1 in color_list1] for color2 in color_list2]
+color_matrix
+
+
+# ---------------------------------------------------------------------------------------
+
+# Bid prices offered by the two buyers, pA and pB. Bid sizes, sA and sB. 
+# Add a new best size column (bS) to the table, that returns the size at the best price. 
+# If the two buyers have the same price then bS is equal to sA + sB
+
+
+# Let's assume we have only 2 buyers:
+
+PRICEDOMSIZE=  5  # domain size of prices
+SIZEDOMSIZE= 100
+N = 1000 * 1000
+
+def createTable(N):
+	return pd.DataFrame({
+			'pA': np.random.randint(0, PRICEDOMSIZE, N),
+			'pB': np.random.randint(0, PRICEDOMSIZE, N),
+			'sA': np.random.randint(0, SIZEDOMSIZE, N),
+			'sB': np.random.randint(0, SIZEDOMSIZE, N)})
+
+t = createTable(N)
+
+
+# 1st approach: go row by row
+def bestSizeIF(pA, pB, sA, sB):
+    if pA == pB:
+        return sA + sB
+    return sA if pA > pB else sB
+
+t['bS']= t.apply(lambda row: bestSizeIF(row['pA'], row['pB'], row['sA'], row['sB']), axis=1)
+
+# vectorize approach with True/False vector
+def bestSizeWHERE(pA, pB, sA, sB):
+    p = np.array([pA, pB])
+    return np.sum(np.array([sA, sB])[
+				np.where(p == np.max(p))]) # where returns list of indices containing True values
+
+t['bS']= t.apply(lambda row: bestSizeWHERE(row['pA'], row['pB'], row['sA'], row['sB']), axis=1)
+
+def bestSizeMULT(pA, pB, sA, sB):
+    p = np.array([pA, pB])
+    return np.sum(np.array([sA, sB]) *
+        (p == np.max(p))) # Boolean arithmetic in which True acts as one, False acts as zero
+
+	def bestSizeMULT2(pA, pB, sA, sB):
+		return sA * (pA >= pB) + sB * (pA <= pB) # another approach
+
+t['bS']= t.apply(lambda row: bestSizeMULT(row['pA'], row['pB'], row['sA'], row['sB']), axis=1)
 
 
 
