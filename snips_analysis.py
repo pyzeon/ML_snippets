@@ -578,6 +578,7 @@ rgb = [color for color in color_list if color in('green', 'red', 'blue')]
 rgb
 
 
+
 green_list = [color for color in color_list if color == 'green']
 
 green_list2 = []
@@ -654,6 +655,28 @@ def bestSizeMULT(pA, pB, sA, sB):
 
 t['bS']= t.apply(lambda row: bestSizeMULT(row['pA'], row['pB'], row['sA'], row['sB']), axis=1)
 
+
+
+# ---------------------------------------------------------------------------------------------
+
+# List comprehension:
+
+squares = [i * i for i in range(10)] 
+
+txns = [1.09, 23.56, 57.84, 4.56, 6.78]
+TAX_RATE = .08
+def get_price_with_tax(txn):
+    return txn * (1 + TAX_RATE)
+final_prices = [get_price_with_tax(i) for i in txns]
+
+
+sentence = 'the rocket came back from mars'
+vowels = [i for i in sentence if i in 'aeiou'] # list
+unique_vowels = {i for i in sentence if i in 'aeiou'} # set
+
+
+original_prices = [1.25, -9.45, 10.22, 3.78, -5.92, 1.16]
+prices = [i if i > 0 else 0 for i in original_prices]
 
 
 

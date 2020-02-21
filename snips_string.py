@@ -14,6 +14,7 @@
 # all possible letter combinations
 # fuzzy matching
 # the most often occuring names using collection.Counter
+# Get vowels from a sentence
 
 
 #-------------------------------------------------------------------
@@ -237,6 +238,13 @@ cheese_count = Counter(cheese) # Counter is just a dictionary that maps items to
 
 print(cheese_count.most_common(3))
 # Prints: [('parmesan', 4), ('cheddar', 3), ('gouda', 2)]
+
+
+# ---------------------------------------------------------------------------------------------------
+# Get vowels from a sentence
+sentence = 'the rocket came back from mars'
+vowels = [i for i in sentence if i in 'aeiou'] # list
+unique_vowels = {i for i in sentence if i in 'aeiou'} # set
 
 
 
