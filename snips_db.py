@@ -4,6 +4,7 @@
 # Load lines from csv file
 # skip lines when reading text
 # merge all csv files of the same struc in the same folder
+# read all csvs, merge and reduce the size of big file from 30GB to 10GB   
 # download the zip file with many txts and move the data to 1 csv
 # read all needed csvs from zip	
 # divide text (csv or ...) to small files with defined number of lines
@@ -21,7 +22,7 @@
 # names of csvs
 if fname[-4:] == '.csv':
 	fname = fname[:len(fname)-4]
-	    
+
 
 #--------------------------------------------------------------------------------------------------------
 # gets the list of tickers in the directory
@@ -117,7 +118,29 @@ def folder_csv_merge(file_prefix, folder_path='', memory='no'):
     else:
         return combined
     print('done')
-		
+
+# ----------------------------------------------------------------------------------------------------
+# read all csvs, merge and reduce the size of big file from 30GB to 10GB   
+
+wdir = "C:/bigdata/pums/2014-2018/pop"
+os.chdir(wdir)
+all_files = glob.glob("*.csv")     
+pop_list = (pd.read_csv(f) for f in all_files)
+popr = pd.concat(pop_list, ignore_index=True)
+
+def mkdowncast(df): # reducing the size of big file from 30GB to 10GB   
+    for c in enumerate(df.dtypes) : 
+        if c[1] in ["int32","int64"] : 
+            df[df.columns[c[0]]] = pd.to_numeric(df[df.columns[c[0]]], downcast='integer')
+    for c in enumerate(df.dtypes) : 
+        if c[1] in ["float64","float32"] : 
+            df[df.columns[c[0]]] = pd.to_numeric(df[df.columns[c[0]]], downcast='float')
+    return(df)
+
+poprd = mkdowncast(popr.copy())
+
+
+
 	
 #--------------------------------------------------------------------------------------------------------
 # download the zip file with many txts and move the data to 1 csv

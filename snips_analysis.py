@@ -680,5 +680,40 @@ prices = [i if i > 0 else 0 for i in original_prices]
 
 
 
+# --------------------------------------------------------------------------------
 
 
+from more_itertools import partition
+# Split based on file extension
+files = [
+    "foo.jpg",
+    "bar.exe",
+    "baz.gif",
+    "text.txt",
+    "data.bin",
+]
+
+ALLOWED_EXTENSIONS = ('jpg','jpeg','gif','bmp','png')
+is_allowed = lambda x: x.split(".")[1] in ALLOWED_EXTENSIONS
+
+allowed, forbidden = partition(is_allowed, files)
+list(allowed)
+#  ['bar.exe', 'text.txt', 'data.bin']
+list(forbidden)
+#  ['foo.jpg', 'baz.gif']
+
+
+# ------------------------------------------------------------------------------------
+
+from more_itertools import map_reduce
+data = 'This sentence has words of various lengths in it, both short ones and long ones'.split()
+
+keyfunc = lambda x: len(x)
+result = map_reduce(data, keyfunc)
+# defaultdict(None, {
+#   4: ['This', 'both', 'ones', 'long', 'ones'],
+#   8: ['sentence'],
+#   3: ['has', 'it,', 'and'],
+#   5: ['words', 'short'],
+#   2: ['of', 'in'],
+#   7: ['various', 'lengths']})
