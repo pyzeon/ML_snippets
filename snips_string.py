@@ -248,3 +248,6 @@ unique_vowels = {i for i in sentence if i in 'aeiou'} # set
 
 
 
+#filter out companies that will complicate my taxes
+	qvdf=qvdf[~qvdf['name'].str[-2:].str.contains('LP')]
+	qvdf=qvdf[~qvdf['name'].str[-3:].str.contains('LLC')]

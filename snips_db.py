@@ -18,6 +18,21 @@
 # get last date of data from Postgres DB
 
 
+# -----------------------------------------------------------------------------------------------
+import os
+directory = 'D:\\Data\\minute_data\\histdata_2000_2019\\'
+listdir=os.listdir(directory) # all files in directory
+
+for line in listdir:
+#    line_chunks = line.split("_")
+    year = line[10:16]
+#    name = line_chunks[0]
+#    gender = line_chunks[1]
+#    count = line_chunks[2]
+
+    data_list.append([year, name, gender, count])
+
+
 #--------------------------------------------------------------------------------------------------------
 # names of csvs
 if fname[-4:] == '.csv':
