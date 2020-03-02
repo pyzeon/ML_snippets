@@ -4,6 +4,7 @@
 # Load lines from csv file
 # skip lines when reading text
 # merge all csv files of the same struc in the same folder
+# equities ticks from the specified CSV data directory
 # read all csvs, merge and reduce the size of big file from 30GB to 10GB   
 # download the zip file with many txts and move the data to 1 csv
 # read all needed csvs from zip	
@@ -154,6 +155,23 @@ def mkdowncast(df): # reducing the size of big file from 30GB to 10GB
 
 poprd = mkdowncast(popr.copy())
 
+
+# ----------------------------------------------------------------------------------------------------
+# Source: qstrader/price_handler/historic_csv_tick.py
+
+# Opens the CSV files containing the equities ticks from the specified CSV data directory, 
+# converting them into them into a pandas DataFrame, 
+# stored in a dictionary.
+
+
+
+def _open_ticker_price_csv(self, ticker):
+	ticker_path = os.path.join(self.csv_dir, "%s.csv" % ticker)
+	self.tickers_data[ticker] = pd.io.parsers.read_csv(
+	    ticker_path, header=0, parse_dates=True,
+	    dayfirst=True, index_col=1,
+	    names=("Ticker", "Time", "Bid", "Ask")
+	)
 
 
 	
