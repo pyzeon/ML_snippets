@@ -20,9 +20,15 @@
 
 
 # -----------------------------------------------------------------------------------------------
-import os
+import os, glob
+import pandas as pd
 directory = 'D:\\Data\\minute_data\\histdata_2000_2019\\'
-listdir=os.listdir(directory) # all files in directory
+file_list = glob.glob(directory + '*.zip') # all files in directory
+hist_data = pd.DataFrame(file_list)
+hist_data['curr_pair'] = hist_data[0].apply(lambda x: x[10:16])
+hist_data['year'] = hist_data[0].apply(lambda x: x[-8:-4])
+
+
 
 for line in listdir:
 #    line_chunks = line.split("_")
