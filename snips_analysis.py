@@ -693,3 +693,51 @@ result = map_reduce(data, keyfunc)
 #   5: ['words', 'short'],
 #   2: ['of', 'in'],
 #   7: ['various', 'lengths']})
+
+#########################################################
+
+
+def all_equal(lst):
+      return lst[1:] == lst[:-1]
+
+all_equal([1, 2, 3, 4, 5, 6]) # False
+all_equal([1, 1, 1, 1]) # True
+
+
+def all_unique(lst):
+      return len(lst) == len(set(lst))
+
+x = [1, 2, 3, 4, 5, 6]
+y = [1, 2, 2, 3, 4, 5]
+all_unique(x) # True
+all_unique(y) # False
+
+
+def difference(a, b):
+      _b = set(b)
+  return [item for item in a if item not in _b]
+
+difference([1, 2, 3], [1, 2, 4]) # [3]
+
+
+
+def count_occurrences(lst, val):
+      return len([x for x in lst if x == val and type(x) == type(val)])
+
+count_occurrences([1, 1, 2, 1, 2, 3], 1) # 3
+
+
+from time import sleep
+
+def delay(fn, ms, *args):
+  sleep(ms / 1000)
+  return fn(*args)
+
+delay(lambda x: print(x),1000,'later') # prints 'later' after one second
+
+
+def digitize(n):
+      return list(map(int, str(n)))
+
+digitize(123) # [1, 2, 3]
+
