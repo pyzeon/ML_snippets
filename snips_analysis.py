@@ -230,6 +230,56 @@ import numpy as np
 
 
 
+# Iterations thorugh the rows -------------------------------------------------------
+
+		# never use iterrows
+		# rarely use intertuples:
+				result = 0
+				for(_, col1, col2, col3, col4) in df.itertuples(name=None): 
+					result += max(col2, col3)
+
+
+		# list comprehensions are also useful:
+				result = [f(x) for x in df['col']] # iterating over one column - `f` is some function that processes your data
+				result = [f(x, y) for x, y in zip(df['col1'], df['col2'])] # iterating over two columns, use `zip`
+
+				squares = [i * i for i in range(10)] 
+
+				txns = [1.09, 23.56, 57.84, 4.56, 6.78]
+				TAX_RATE = .08
+				def get_price_with_tax(txn):
+					return txn * (1 + TAX_RATE)
+				final_prices = [get_price_with_tax(i) for i in txns]
+
+
+				sentence = 'the rocket came back from mars'
+				vowels = [i for i in sentence if i in 'aeiou'] # list
+				unique_vowels = {i for i in sentence if i in 'aeiou'} # set
+
+
+				original_prices = [1.25, -9.45, 10.22, 3.78, -5.92, 1.16]
+				prices = [i if i > 0 else 0 for i in original_prices]
+
+
+		# map reduce
+				from more_itertools import map_reduce
+				data = 'This sentence has words of various lengths in it, both short ones and long ones'.split()
+
+				keyfunc = lambda x: len(x)
+				result = map_reduce(data, keyfunc)
+				# defaultdict(None, {
+				#   4: ['This', 'both', 'ones', 'long', 'ones'],
+				#   8: ['sentence'],
+				#   3: ['has', 'it,', 'and'],
+				#   5: ['words', 'short'],
+				#   2: ['of', 'in'],
+				#   7: ['various', 'lengths']})
+
+
+
+
+
+
 # changes to DF ---------------------------------------------------------------------
 
 
@@ -289,6 +339,10 @@ import numpy as np
 			# split column into 2 columns
 			df[[one,two]] = df[orig].str.split(separator,expand=True)
 
+			# select columns:
+			list(my_dataframe)
+			my_dataframe.columns.values.tolist()
+
 
 
 # Extracting sub-set from DF --------------------------------------------------------------
@@ -310,6 +364,26 @@ import numpy as np
 
 		df[df["gender"] == "M"]["name"].nunique() # Unique names for male
 		df[(df["M"] >= 50000) & (df["F"] >= 50000)] # names that atleast have 50,000 records for each gender
+
+
+
+		# Different methods:
+			df = pd.DataFrame({'A': 'foo bar foo bar foo bar foo foo'.split(),
+							'B': 'one one two three two two one three'.split(),
+							'C': np.arange(8), 'D': np.arange(8) * 2})
+			df.loc[df['A'] == 'foo']
+
+			df.loc[df['B'].isin(['one','three'])]
+
+			df = df.set_index(['B']) # if you wish to do this many times, it is more efficient to make an index first
+			df.loc['one']
+
+			mask = df['A'] == 'foo'
+			df[mask]
+
+
+
+
 
 
 		male_df = df[df["gender"] == "M"].groupby("year").sum()
@@ -405,6 +479,13 @@ import numpy as np
 
 
 
+		# Selecting unique values from dataframe: the quickest is via numpy
+
+			df = pd.DataFrame({'Col1': ['Bob', 'Joe', 'Bill', 'Mary', 'Joe'],
+							'Col2': ['Joe', 'Steve', 'Bob', 'Bob', 'Steve'],
+							'Col3': np.random.random(5)})
+			np.unique(df[['Col1', 'Col2']].values) # array(['Bill', 'Bob', 'Joe', 'Mary', 'Steve'], dtype=object)
+			set(np.concatenate(df.values))
 
 
 
@@ -633,28 +714,6 @@ t['bS']= t.apply(lambda row: bestSizeMULT(row['pA'], row['pB'], row['sA'], row['
 
 
 
-# ---------------------------------------------------------------------------------------------
-
-# List comprehension:
-
-squares = [i * i for i in range(10)] 
-
-txns = [1.09, 23.56, 57.84, 4.56, 6.78]
-TAX_RATE = .08
-def get_price_with_tax(txn):
-    return txn * (1 + TAX_RATE)
-final_prices = [get_price_with_tax(i) for i in txns]
-
-
-sentence = 'the rocket came back from mars'
-vowels = [i for i in sentence if i in 'aeiou'] # list
-unique_vowels = {i for i in sentence if i in 'aeiou'} # set
-
-
-original_prices = [1.25, -9.45, 10.22, 3.78, -5.92, 1.16]
-prices = [i if i > 0 else 0 for i in original_prices]
-
-
 
 # --------------------------------------------------------------------------------
 
@@ -681,18 +740,7 @@ list(forbidden)
 
 # ------------------------------------------------------------------------------------
 
-from more_itertools import map_reduce
-data = 'This sentence has words of various lengths in it, both short ones and long ones'.split()
 
-keyfunc = lambda x: len(x)
-result = map_reduce(data, keyfunc)
-# defaultdict(None, {
-#   4: ['This', 'both', 'ones', 'long', 'ones'],
-#   8: ['sentence'],
-#   3: ['has', 'it,', 'and'],
-#   5: ['words', 'short'],
-#   2: ['of', 'in'],
-#   7: ['various', 'lengths']})
 
 #########################################################
 
@@ -740,4 +788,12 @@ def digitize(n):
       return list(map(int, str(n)))
 
 digitize(123) # [1, 2, 3]
+
+
+from collections import Counter
+def filter_non_unique(lst):
+  return [item for item, count in counter = Counter(lst).items() if count == 1]
+
+filter_non_unique([1, 2, 2, 3, 4, 4, 5]) # [1, 3, 5]
+
 

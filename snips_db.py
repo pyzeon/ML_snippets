@@ -6,8 +6,10 @@
 # merge all csv files of the same struc in the same folder
 # equities ticks from the specified CSV data directory
 # read all csvs, merge and reduce the size of big file from 30GB to 10GB   
+# collect all cleaned csv files
 # download the zip file with many txts and move the data to 1 csv
 # read all needed csvs from zip	
+# unzip all
 # divide text (csv or ...) to small files with defined number of lines
 # check existing and create txts for every ticker
 # update csv from the latest date to today
@@ -38,6 +40,44 @@ for line in listdir:
 #    count = line_chunks[2]
 
     data_list.append([year, name, gender, count])
+
+#--------------------------------------------------------------------------------------------------------
+import os, glob
+import pandas as pd
+
+directory = 'D:\\Data\\minute_data\\'
+file_list = glob.glob(directory + '*.txt') # all files in directory
+li=[x.split('.')[0] for x in os.listdir(directory) if x.endswith(".txt")]
+hist_data = pd.DataFrame(file_list)
+hist_data['ticker'] = hist_data[0].str.split("\")[-1]
+
+read_file = pd.read_csv(file_list[0], sep='\t', decimal=",")
+read_file['Date'] = pd.to_datetime(read_file['Date']+' '+read_file['Time'] # merge 2 columns
+                                    , format='%d.%m.%Y %H:%M') # adding format makes converting much faster
+read_file=read_file.drop(read_file.columns[[1,-1]],axis=1) # delete not needed columns
+                    .set_index('Date')
+
+read_file.dtypes
+read_file.resample("Y").count()
+read_file[read_file.isna().any(axis=1)].count()
+read_file[read_file.isnull().any(axis=1)].count()
+
+
+extract=[read_file[c].nlargest(2).iloc for c in read_file]
+read_file.loc[extract]
+
+
+read_file.nlargest(3,'Volume',keep='all')
+
+read_file[read_file.nlargest(3,x,keep='all') for x in read_file]
+
+read_file.min()
+
+
+read_file.mask((read_file - read_file.mean()).abs() > 4 * read_file.std())
+read_file[read_file.apply(lambda x :(x-x.mean()).abs()>(3*x.std()) ).all(1)]
+
+
 
 
 #--------------------------------------------------------------------------------------------------------
@@ -141,6 +181,7 @@ def folder_csv_merge(file_prefix, folder_path='', memory='no'):
         return combined
     print('done')
 
+
 # ----------------------------------------------------------------------------------------------------
 # read all csvs, merge and reduce the size of big file from 30GB to 10GB   
 
@@ -160,6 +201,30 @@ def mkdowncast(df): # reducing the size of big file from 30GB to 10GB
     return(df)
 
 poprd = mkdowncast(popr.copy())
+
+
+
+# ----------------------------------------------------------------------------------------------------
+
+#collect all cleaned csv files
+def collect_cleaned_bones(file_path):
+    lst = []
+    
+    #get all subdirectories
+    dirs = walk(file_path)
+    i = 0
+    
+    for dir in dirs:
+        print "Checking "+dir[0]
+        filenames = [f for f in listdir(dir[0]) if isfile(join(dir[0], f))]
+        for filename_ in filenames:
+            if filename_.lower().endswith('_tmp.csv'):
+                lst.append(dir[0]+"\\"+filename_)
+                print "Collected %s" %i
+                i += 1    
+    #return unique list
+    return list(set(lst))
+
 
 
 # ----------------------------------------------------------------------------------------------------
@@ -222,6 +287,51 @@ for file_name in list_of_file_names:
     if ((file_name.endswith('.csv')) & (key_word in file_name)):
         list_to_append_to.append(file_name)
 list_of_dfs=[pd.read_csv(zip_file.open(x), low_memory=False) for x in list_to_append_to]
+
+
+#-----------------------------------------------------------------------------------------------------------------------			
+# unzip all magic
+def unzip(file_path, subdir):
+    import zipfile
+    
+    #walk through folder and unzip all
+    i = 0
+    d = 0
+    
+    #if archives were inside archives
+    if subdir:
+        dirs = walk(file_path)
+        
+        for dir in dirs:
+            if d > 0:
+                print "Checking "+dir[0]
+                rename_elements_in_archives(dir[0], True)
+                filenames = [f for f in listdir(dir[0]) if isfile(join(dir[0], f))]
+                for filename in filenames:
+                    if "tmp" in filename:
+                        try:
+                            print i
+                            print "Unzipping "+dir[0]+"\\"+filename
+                            with zipfile.ZipFile(dir[0]+"\\"+filename, "r") as zipped:
+                                zipped.extractall(dir[0]+"\\")
+                            i += 1
+                        except Exception as e:
+                            print e
+            d += 1
+    #normal way
+    else:
+        filenames = [f for f in listdir(file_path) if isfile(join(file_path, f))]
+    
+        for filename in filenames:
+            if "tmp" in filename:
+                try:
+                    print "Unzipping %s" %i
+                    print filename
+                    with zipfile.ZipFile(file_path+filename, "r") as zipped:
+                        zipped.extractall(file_path)
+                        i += 1
+                except Exception as e:
+                    print e
 
 
 #--------------------------------------------------------------------------------------------------------

@@ -137,6 +137,11 @@ def str_to_date(dt):
 
 start_trading_day = datetime.date(2017, 6, 8)
 end_trading_day = datetime.date(2017, 6, 20) #end_trading_day
+
+start =  start or datetime.date(1900,1,1)
+stop = stop or datetime.date.today()
+
+
 # end_trading_day  = datetime.date.today()
 trading_days = []
 while start_trading_day <= end_trading_day:
@@ -631,6 +636,20 @@ MARKET_TIMEZONE = timezone("US/Eastern")
         return MARKET_TIMEZONE.localize(market_time)
 
 
+# -------------------------------------------------------------------------------------------------------------
+# Adjust dates in csv according to the time zone
 
-
+        time_zone_difference = int(args[2])
+        input_filename = args[1]
+        output_filename = 'OUT_' + input_filename
+        with open(output_filename, 'w') as w:
+            with open(input_filename, 'r') as r:
+                reader = csv.reader(r, delimiter=';')
+                for row in reader:
+                    print(row)
+                    new_row = list(row)
+                    ts = datetime.strptime(new_row[0], '%Y%m%d %H%M%S')
+                    ts += timedelta(hours=time_zone_difference)
+                    new_row[0] = ts.strftime('%Y%m%d %H%M%S')
+                    w.write(';'.join(new_row) + '\n')
 

@@ -81,6 +81,14 @@ print("%(pi).2f - %(pi).4f - %(e).1f" % num_dict)
 
 " ".join(["a","b","c","d"])
 
+
+URL_HISTORICAL = 'http://ichart.yahoo.com/table.csv?s=%(s)s&a=%(a)s&b=%(b)s&c=%(c)s&d=%(d)s&e=%(e)s&f=%(f)s'
+url = self.URL_HISTORICAL % dict(
+            s=self.symbol,
+            a=start.month-1,b=start.day,c=start.year,
+            d=stop.month-1,e=stop.day,f=stop.year)
+
+            
 # --------------------------------------------------------------------
 # Convert raw string integer inputs to integers
 
