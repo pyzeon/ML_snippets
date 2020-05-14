@@ -1,8 +1,9 @@
 # names of csvs
 # gets the list of tickers in the directory
 # read txt
-# Load lines from csv file
+# Read CSVs
 # skip lines when reading text
+# Loading sample of big csv
 # merge all csv files of the same struc in the same folder
 # equities ticks from the specified CSV data directory
 # read all csvs, merge and reduce the size of big file from 30GB to 10GB   
@@ -15,10 +16,12 @@
 # update csv from the latest date to today
 # create folder with curr date
 # check latest data in file
-	
+# check directories
+# Get last n lines of a file
+# Save memory of a dataframe by converting to smaller datatypes
+# Keep track of where your data is coming when you are using multiple CSVs
+# Dictionary to CSV
 
-# from MongoDB to excel
-# get last date of data from Postgres DB
 
 
 # -----------------------------------------------------------------------------------------------
@@ -30,7 +33,34 @@ hist_data = pd.DataFrame(file_list)
 hist_data['curr_pair'] = hist_data[0].apply(lambda x: x[10:16])
 hist_data['year'] = hist_data[0].apply(lambda x: x[-8:-4])
 
+# -----------------------------------------------------------------------------------------------
 
+import os, glob
+import pandas as pd
+
+sp500_directory = 'D:\\Data\\minute_data\\spx-1m-adj-csv\\'
+combined = pd.concat([pd.read_csv(f, sep=',', decimal=".", 
+                                    usecols=[0,1], 
+                                    names=("Day", "Time"),
+                                    nrows=1,
+                                    # skiprows=range(2,count-1), 
+                                    header=None).
+                        assign(filename = f) 
+                        for f in glob.glob(sp500_directory + '*.txt')])
+combined['Symbol'] = [x.split('.')[0] for x in os.listdir(sp500_directory) if x.endswith(".txt")] # names of txt files in the directory
+combined.to_csv(sp500_directory + 'SP500_TKRS.csv', index=False)
+
+
+
+from collections import deque
+def read_fst_lst(filename):
+    count=len(open(filename).readlines()) 
+    pd.read_csv(filename, sep=',', decimal=".", usecols=[0,1], skiprows=range(2,count-1), header=None).assign(filename = filename)
+combined = pd.concat([read_fst_lst(f) for f in glob.glob(sp500_directory + '*.txt')])
+
+
+
+# -----------------------------------------------------------------------------------------------
 
 for line in listdir:
 #    line_chunks = line.split("_")
@@ -40,6 +70,8 @@ for line in listdir:
 #    count = line_chunks[2]
 
     data_list.append([year, name, gender, count])
+
+
 
 #--------------------------------------------------------------------------------------------------------
 import os, glob
@@ -116,28 +148,39 @@ with open(filename, "r") as f: # automaticall close the file in the end
     for line in f:
         print(f)
 
-# This above is equivalent to this:
-filename = "myfile.txt"
-try: 
-    f = open(filename, "r")
-    for line in f:
-        print(f)
-except Exception as e:
-    raise e
-finally:
-    f.close()
+    # This above is equivalent to this:
+    filename = "myfile.txt"
+    try: 
+        f = open(filename, "r")
+        for line in f:
+            print(f)
+    except Exception as e:
+        raise e
+    finally:
+        f.close()
 
 #-----------------------------------------------------------------------------------------------------------------------
-# Load lines from csv file
-		
-def read_line_from_file(filename):    
-    lines = []
-    with open(filename, 'r') as f:
-        for line in f:
-            lines.append(line.rstrip())
-    if len(lines) > 0:
-        lines = lines[1:]
-    return lines
+# Read CSVs
+
+    # CSV DictReader solution
+    import csv
+    with open("/path/to/dict.csv") as my_data: 
+    csv_mapping_list = list(csv.DictReader(my_data))
+
+    # Read lines
+    def read_line_from_file(filename):    
+        lines = []
+        with open(filename, 'r') as f:
+            for line in f:
+                lines.append(line.rstrip())
+        if len(lines) > 0:
+            lines = lines[1:]
+        return lines
+
+    # Loading sample of big csv:
+    df = pd.read_csv("/.../US_Accidents_Dec19.csv", 
+                    skiprows = lambda x: x>0 # x > 0 makes sure that the headers is not skipped 
+                                        and np.random.rand() > 0.01) # returns True 99% of the time, thus skipping 99% of the time
 
 #--------------------------------------------------------------------------------------------------------
 # skip lines when reading text
@@ -415,27 +458,111 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
 
+##-------------------------------------------------------------------------------------------------------
 
-#--------------------------------------------------------------------------------------------------------
-# from MongoDB to excel
-# Connectio URI can be in shape mongodb://<username>:<password>@<ip>:<port>/<authenticationDatabase>')
-client = pymongo.MongoClient('mongodb://localhost')
+# Get last n lines of a file:
 
-def export_to_excel(name, collection, database):
-    data = list(client[database][collection].find({},{'_id':0}))
-    df =  pd.DataFrame(data)
-    df.to_excel('{}.xlsx'.format(name)') #writer, sheet_name='Sheet1')
+from collections import deque
 
-#--------------------------------------------------------------------------------------------------------
-# get last date of data from Postgres DB
-def fetch_last_day_mth(year_, conn):
-    cur = conn.cursor() # conn: a Postgres DB connection object
-    SQL =   """
-            SELECT MAX(date_part('day', date_price)) FROM daily_data
-            WHERE date_price BETWEEN '%s-12-01' AND '%s-12-31'
-            """
-    cur.execute(SQL, [year_,year_])        
-    data = cur.fetchall()
-    cur.close()
-    last_day = int(data[0][0])
-    return last_day
+def tail(filename, n=10):
+    with open(filename) as f:
+        return deque(f, n)
+
+
+##-------------------------------------------------------------------------------------------------------
+# Save memory of a dataframe by converting to smaller datatypes
+# Save memory of a dataframe
+df = pd.read_csv("../input/titanic/train.csv", usecols = ["Pclass", "Sex", "Parch", "Cabin"])
+df.memory_usage(deep = True) # let's see how much our df occupies in memory
+
+# convert to smaller datatypes
+df = df.astype({"Pclass":"int8",
+                "Sex":"category", 
+                "Parch": "Sparse[int]", # most values are 0
+                "Cabin":"Sparse[str]"}) # most values are NaN
+df.memory_usage(deep = True)
+
+
+#----------------------------------------------------------------------------------------------------------
+# Keep track of where your data is coming when you are using multiple sources
+
+        # let's generate some fake data
+        df1 = generate_sample_data()
+        df2 = generate_sample_data()
+        df3 = generate_sample_data()
+        df1.to_csv("trick78data1.csv")
+        df2.to_csv("trick78data2.csv")
+        df3.to_csv("trick78data3.csv")
+
+        # Step 1 generate list with the file name
+        lf = []
+        for _,_, files in os.walk("/kaggle/working/"):
+            for f in files:
+                if "trick78" in f:
+                    lf.append(f)
+                    
+        lf
+
+        # You can use this on your local machine
+        #from glob import glob
+        #files = glob("trick78.csv")
+
+        # Step 2: assing create a new column named filename and the value is file
+        # Other than this we are just concatinating the different dataframes
+        df = pd.concat((pd.read_csv(file).assign(filename = file) for file in lf), ignore_index = True)
+        df.sample(10)
+
+#----------------------------------------------------------------------------------------------------------
+# Utility to output an n-level nested dictionary as a CSV
+
+import csv
+import os
+
+def flatten_dict(
+        data,
+        parent_key='',
+        sep='_'):
+    """flatten_dict
+
+    Flatten an n-level nested dictionary for csv output
+
+    :param data: Dictionary to be parsed
+    :param parent_key: The nested parent key
+    :param sep: The separator to use between keys
+    """
+    items = []
+    for key, value in data.items():
+        new_key = parent_key + sep + key if parent_key else key
+        if isinstance(value, dict):
+            items.extend(flatten_dict(value, new_key, sep=sep).items())
+        elif isinstance(value, list):
+            for idx, val in enumerate(value):
+                temp_key = f'{new_key}_{idx}'
+                items.extend(flatten_dict(
+                    val,
+                    temp_key,
+                    sep=sep).items())
+        else:
+            items.append((new_key, value))
+    return dict(items)
+# end of flatten_dict
+
+
+def dict_to_csv(
+        data,
+        filename='test'):
+    """dict_to_csv
+
+    Convert a dictionary to an output CSV
+
+    :param data: Dictionary to be converted
+    :param filename: The name of the CSV to produce
+    """
+    noext_filename = os.path.splitext(filename)[0]
+    flattened_data = flatten_dict(data)
+    with open(f'{noext_filename}.csv', 'w') as f:
+        w = csv.DictWriter(f, flattened_data.keys())
+        w.writeheader()
+        w.writerow(flattened_data)
+
+#----------------------------------------------------------------------------------------------------------

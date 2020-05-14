@@ -15,7 +15,7 @@
 # fuzzy matching
 # the most often occuring names using collection.Counter
 # Get vowels from a sentence
-
+# Create rows for values separated by commas in a cell
 
 #-------------------------------------------------------------------
 # string series
@@ -259,3 +259,13 @@ unique_vowels = {i for i in sentence if i in 'aeiou'} # set
 #filter out companies that will complicate my taxes
 	qvdf=qvdf[~qvdf['name'].str[-2:].str.contains('LP')]
 	qvdf=qvdf[~qvdf['name'].str[-3:].str.contains('LLC')]
+
+
+# ---------------------------------------------------------------------------------------------------
+# Create rows for values separated by commas in a cell
+
+d = {"Team":["FC Barcelona", "FC Real Madrid"], 
+    "Players":["Ter Stegen, Semedo, Piqué, Lenglet, Alba, Rakitic, De Jong, Sergi Roberto, Messi, Suárez, Griezmann",
+               "Courtois, Carvajal, Varane, Sergio Ramos, Mendy, Kroos, Valverde, Casemiro, Isco, Benzema, Bale"]}
+df = pd.DataFrame(d)
+df.assign(Players = df["Players"].str.split(",")).explode("Players")

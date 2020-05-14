@@ -220,6 +220,9 @@ import numpy as np
 		GBPCAD.columns
 		SPX500.count(), SPY_TICK.describe()
 
+		df.groupby("continent")["beer_servings"].describe()
+
+
 		# describe DF
 		pip install pandas-profiling 
 		import pandas_profiling
@@ -227,6 +230,14 @@ import numpy as np
 		df.profile_report() # Show in NB
 		profile = df.profile_report(title='Pandas Profiling Report')  
 		profile.to_file(outputfile="Titanic data profiling.html")
+
+
+		# memory usage
+			df = generate_sample_data_datetime().reset_index()
+			df.columns = ["date", "sales", "customers"]
+			df.info(memory_usage = "deep") # Show the global usage of memory of the df"
+			df.memory_usage(deep = True) # Show the usage of memory of every column
+
 
 
 
@@ -285,6 +296,10 @@ import numpy as np
 
 		NQ100.rename(columns={'lastsale':'Last'}) # rename column	
 
+		# add a prefix or suffix to all columns
+		df.add_prefix("1_")
+		df.add_suffix("_Z")
+
 		data['educ'] = pd.to_numeric(data['educ'],errors='coerce') # errors='coerce' means that we force the conversation. noncovertable are set to NaN
 
 
@@ -301,11 +316,19 @@ import numpy as np
 				df['data']=np.random.randn(len(df))
 				df.index = pd.to_datetime(df[datecols])
 				df=df.drop(datecols,axis=1).squeeze()
+				df.dropna(axis = "columns") # drop any column that has missing values
+				df.dropna(thresh = len(df)*0.95, axis = "columns") # drop column where missing values are above a threshold
+
 
 			# delete rows
 				NQ100_small.drop('PYPL')
 				NQ100new[-NQ100new.Last>1000]
 				UC=USDCHF.dropna()
+				df.isna().mean() # calculate the % of missing values in each row
+				df1.dropna(axis = "rows") # drop any row that has missing values
+
+
+
 
 
 		# Appending rows
@@ -327,6 +350,11 @@ import numpy as np
 				gasoline_price_df.loc[index,'Artificially_Generated_Anomaly']=1
 
 
+			# see where the columns are coming from
+			pd.merge(df, df1, how = "left", indicator = True)
+
+
+
 		# creating new columns
 			NQ100['Capitalisation']=NQ100.Last*NQ100.share_volume
 			NQ100['Random']=Series(np.random.normal(size=len(NQ100)),index=NQ100.index)
@@ -343,6 +371,16 @@ import numpy as np
 			list(my_dataframe)
 			my_dataframe.columns.values.tolist()
 
+
+			# split column with list
+			d = {"A":[1, 2, 3], "B":[[10, 20], [40, 50], [60, 70]]}
+			df = pd.DataFrame(d)
+			df_ = df["B"].apply(pd.Series) # Convert it to normal series
+			pd.merge(df, df_, left_index = True, right_index = True)
+
+
+		# Remove a column and store it as a separate series
+			meta = df.pop("Metascore").to_frame() 
 
 
 # Extracting sub-set from DF --------------------------------------------------------------
@@ -365,6 +403,19 @@ import numpy as np
 		df[df["gender"] == "M"]["name"].nunique() # Unique names for male
 		df[(df["M"] >= 50000) & (df["F"] >= 50000)] # names that atleast have 50,000 records for each gender
 
+		# select columns with f-string
+		df = pd.read_csv("/kaggle/input/drinks-by-country/drinksbycountry.csv")
+		drink = "wine"
+		df[f'{drink}_servings'].to_frame() # allows us to iterate fast over columns
+
+
+		# Select columns by dtype
+			df.select_dtypes(include = "number") # Select numerical columns
+			df.select_dtypes(include = "object") # Select string columns
+			df.select_dtypes(include = ["datetime", "timedelta"]) # Select datetime columns
+			df.select_dtypes(include = ["int8", "int16", "int32", "int64", "float"]) # Select by passing the dtypes you need
+
+
 
 
 		# Different methods:
@@ -382,7 +433,12 @@ import numpy as np
 			df[mask]
 
 
-
+		# Filter only the largest categories
+			df = pd.read_csv("../input/imdb-data/IMDB-Movie-Data.csv")
+			df.columns = map(str.lower, list(df.columns)) # convert headers to lower type
+			top_genre = df["genre"].value_counts().to_frame()[0:3].index # select top 3 genre
+			df_top = df[df["genre"].isin(top_genre)] # now let's filter the df with the top genre
+			
 
 
 
@@ -414,6 +470,13 @@ import numpy as np
 		# Only keep quotes at trading times
 		df001 = df001.set_index('Date_Time')
 		df001 = df001.between_time('9:30','16:00',include_start=True, include_end=True)
+
+
+		# Split a df into 2 random subsets
+		df_1 = df.sample(frac = 0.7)
+		df_2 = df.drop(df_1.index) # only works if the df index is unique
+
+
 
 
 		''' Seperates dataframe into multiple by treatment
@@ -463,6 +526,18 @@ import numpy as np
 		bins['Group']=pd.cut(values,range(0,101,10))
 
 		male_df = df[df["gender"] == "M"].groupby("year").sum()
+		
+		df.resample("M")["sales"].sum() # groupby by month
+
+
+		# Combine the output of an aggregation with the original df
+			d = {"orderid":[1, 1, 1, 2, 2, 3, 4, 5], 
+				 "item":[10, 120, 130, 200, 300, 550, 12.3, 200],
+				 "salesperson":["Nico", "Carlos", "Juan", "Nico", "Nico", "Juan", "Maria", "Carlos"]}
+			df = pd.DataFrame(d)
+			df["total_items_sold"] = df.groupby("orderid")["item"].transform(sum) 
+			df["running_total"] = df["item"].cumsum()
+			df["running_total_by_person"] = df.groupby("salesperson")["item"].cumsum()
 
 
 		def data_array_merge(data_array): # merge all dfs into one dfs    
@@ -489,9 +564,28 @@ import numpy as np
 
 
 
+		# Combine the small categories into a single category named "Others"
+			d = {"genre": ["A", "A", "A", "A", "A", "B", "B", "C", "D", "E", "F"]}
+			df = pd.DataFrame(d)
+
+			# 1st way
+			frequencies = df["genre"].value_counts(normalize = True) # Step 1: count the frequencies
+			threshold = 0.1
+			small_categories = frequencies[frequencies < threshold].index # Step 2: filter the smaller categories
+			df["genre"] = df["genre"].replace(small_categories, "Other") # Step 3: replace the values
+			df["genre"].value_counts(normalize = True)
+
+			# 2nd way
+			top_four = df["genre"].value_counts().nlargest(4).index
+			df_updated = df.where(df["genre"].isin(top_four), other = "Other")
+			df_updated["genre"].value_counts()
 
 
-
+			# Convert continuos variable to categorical (cut and qcut)
+				df = pd.read_csv("../input/imdb-data/IMDB-Movie-Data.csv")
+				pd.cut(df["Metascore"], bins = [0, 25, 50, 75, 99]).head() # Using cut you can specify the bin edges
+				pd.qcut(df["Metascore"], q = 3).head() # specify the number of bins
+				pd.qcut(df["Metascore"], q = 4, labels = ["awful", "bad", "average", "good"]).head() # cut and qcut accept label bin size
 
 
 	

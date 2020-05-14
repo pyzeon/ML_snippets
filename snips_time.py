@@ -24,6 +24,43 @@
 	df['data']=np.random.randn(len(df))
 	df.index = pd.to_datetime(df[datecols])
 
+#----------------------------------------------------------------------------------------------------
+# Pandas datetime
+df = generate_sample_data_datetime().reset_index()
+df = df.sample(500)
+df["Year"] = df["index"].dt.year
+df["Month"] = df["index"].dt.month
+df["Day"] = df["index"].dt.day
+df["Hour"] = df["index"].dt.hour
+df["Minute"] = df["index"].dt.minute
+df["Second"] = df["index"].dt.second
+df["Nanosecond"] = df["index"].dt.nanosecond
+df["Date"] = df["index"].dt.date
+df["Time"] = df["index"].dt.time
+df["Time_Time_Zone"] = df["index"].dt.timetz
+df["Day_Of_Year"] = df["index"].dt.dayofyear
+df["Week_Of_Year"] = df["index"].dt.weekofyear
+df["Week"] = df["index"].dt.week
+df["Day_Of_week"] = df["index"].dt.dayofweek
+df["Week_Day"] = df["index"].dt.weekday
+df["Week_Day_Name"] = df["index"].dt.weekday_name
+df["Quarter"] = df["index"].dt.quarter
+df["Days_In_Month"] = df["index"].dt.days_in_month
+df["Is_Month_Start"] = df["index"].dt.is_month_start
+df["Is_Month_End"] = df["index"].dt.is_month_end
+df["Is_Quarter_Start"] = df["index"].dt.is_quarter_start
+df["Is_Quarter_End"] = df["index"].dt.is_quarter_end
+df["Is_Leap_Year"] = df["index"].dt.is_leap_year
+
+
+
+
+# ------------------------------------------------------------------------------------------------------
+
+# Aggregate you datetime by by and filter weekends
+    df = generate_sample_data_datetime()
+    daily_sales = df.resample("D")["sales"].sum().to_frame() # agregate by day
+    weekends_sales = daily_sales[daily_sales.index.dayofweek.isin([5, 6])] # filter weekends
 
 # -------------------------------------------------------------------------------------------------------------
 
@@ -389,10 +426,13 @@ cal_sse.advance_date('20170427', '-1m', return_string=True) # => '2017-03-27'
 cal_sse.schedule('2018-01-05', '2018-02-01', '1w', return_string=True, date_generation_rule=2) # => ['2018-01-05', '2018-01-12', '2018-01-19', '2018-01-26', '2018-02-01']
 
 
+
+
+
 # -------------------------------------------------------------------------------------------------------------
 # reading time stamp
 def read_hhmmss(field: str) -> int:
-    """Read a HH:MM:SS field and return us since midnight."""
+    # """Read a HH:MM:SS field and return us since midnight.""
     if field != "":
         hour = int(field[0:2])
         minute = int(field[3:5])
