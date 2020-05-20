@@ -693,3 +693,105 @@ MARKET_TIMEZONE = timezone("US/Eastern")
                     new_row[0] = ts.strftime('%Y%m%d %H%M%S')
                     w.write(';'.join(new_row) + '\n')
 
+
+# -------------------------------------------------------------------------------------------------------------
+
+
+def week_started_date(as_datetime=False):
+    
+    today = datetime.datetime.utcnow()
+    start = today - datetime.timedelta((today.weekday() + 1) % 7)
+    dt = start + relativedelta.relativedelta(weekday=relativedelta.SU(-1))
+
+    if as_datetime:
+        return dt
+
+    return dt.strftime("%Y-%m-%d")
+
+
+# ---------------------------------------------
+
+def is_third_friday(day=None):
+    """ check if day is month's 3rd friday """
+    day = day if day is not None else datetime.datetime.now()
+    defacto_friday = (day.weekday() == 4) or (
+        day.weekday() == 3 and day.hour() >= 17)
+    return defacto_friday and 14 < day.day < 22
+
+
+# ---------------------------------------------
+
+def after_third_friday(day=None):
+    """ check if day is after month's 3rd friday """
+    day = day if day is not None else datetime.datetime.now()
+    now = day.replace(day=1, hour=16, minute=0, second=0, microsecond=0)
+    now += relativedelta.relativedelta(weeks=2, weekday=relativedelta.FR)
+    return day > now
+
+
+
+import datetime
+import pytz
+
+
+def datetime_is_naive(dateTime):
+    """ Returns True if dateTime is naive."""
+    return dateTime.tzinfo is None or dateTime.tzinfo.utcoffset(dateTime) is None
+
+
+# Remove timezone information.
+def unlocalize(dateTime):
+    return dateTime.replace(tzinfo=None)
+
+
+def localize(dateTime, timeZone):
+    """Returns a datetime adjusted to a timezone:
+
+     * If dateTime is a naive datetime (datetime with no timezone information), timezone information is added but date
+       and time remains the same.
+     * If dateTime is not a naive datetime, a datetime object with new tzinfo attribute is returned, adjusting the date
+       and time data so the result is the same UTC time.
+    """
+
+    if datetime_is_naive(dateTime):
+        ret = timeZone.localize(dateTime)
+    else:
+        ret = dateTime.astimezone(timeZone)
+    return ret
+
+
+def as_utc(dateTime):
+    return localize(dateTime, pytz.utc)
+
+
+def datetime_to_timestamp(dateTime):
+    """ Converts a datetime.datetime to a UTC timestamp."""
+    diff = as_utc(dateTime) - epoch_utc
+    return diff.total_seconds()
+
+
+def timestamp_to_datetime(timeStamp, localized=True):
+    """ Converts a UTC timestamp to a datetime.datetime."""
+    ret = datetime.datetime.utcfromtimestamp(timeStamp)
+    if localized:
+        ret = localize(ret, pytz.utc)
+    return ret
+
+
+def get_first_monday(year):
+    ret = datetime.date(year, 1, 1)
+    if ret.weekday() != 0:
+        diff = 7 - ret.weekday()
+        ret = ret + datetime.timedelta(days=diff)
+    return ret
+
+
+def get_last_monday(year):
+    ret = datetime.date(year, 12, 31)
+    if ret.weekday() != 0:
+        diff = ret.weekday() * -1
+        ret = ret + datetime.timedelta(days=diff)
+    return ret
+
+
+epoch_utc = as_utc(datetime.datetime(1970, 1, 1))

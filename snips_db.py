@@ -225,6 +225,7 @@ def folder_csv_merge(file_prefix, folder_path='', memory='no'):
     print('done')
 
 
+
 # ----------------------------------------------------------------------------------------------------
 # read all csvs, merge and reduce the size of big file from 30GB to 10GB   
 

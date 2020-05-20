@@ -165,6 +165,25 @@ import numpy as np
 
 
 
+		# Takes in an array of numbers and finds consecutive runs of the number to_find
+		def find_runs(arr, to_find):
+			# Create an array that is 1 where arr is equal to to_find, and pad each end with an extra 0.
+			is_the_number = np.concatenate(([0], np.equal(arr, to_find).view(np.int8), [0]))
+			absdiff = np.abs(np.diff(is_the_number))
+			ranges = np.where(absdiff == 1)[0].reshape(-1, 2) # Runs start and end where absdiff is 1.
+			return ranges
+
+			if __name__ == "__main__":
+				test_arr = [1, 2, 3, 0, 0, 0, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 9, 8, 7, 0, 10, 11]
+				print("find_runs() output: ")
+				print(find_runs(test_arr, 0))
+				print("Array outputted should be equal to: ")
+				print("[[3, 9], [12, 16], [19, 20]]")
+
+
+
+
+
 # Comparing several series -------------------------------------------------------
 
 		# find the closest value (to a given scalar)
@@ -891,3 +910,81 @@ def filter_non_unique(lst):
 filter_non_unique([1, 2, 2, 3, 4, 4, 5]) # [1, 3, 5]
 
 
+
+
+##########################################################################################################
+
+# Allign dataseries
+
+def datetime_aligned(ds1, ds2, maxLen=None):
+    """
+    Returns two dataseries that exhibit only those values whose datetimes are in both dataseries.
+
+    :param ds1: A DataSeries instance.
+    :type ds1: :class:`DataSeries`.
+    :param ds2: A DataSeries instance.
+    :type ds2: :class:`DataSeries`.
+    :param maxLen: The maximum number of values to hold for the returned :class:`DataSeries`.
+        Once a bounded length is full, when new items are added, a corresponding number of items are discarded from the
+        opposite end. If None then dataseries.DEFAULT_MAX_LEN is used.
+    :type maxLen: int.
+    """
+    aligned1 = dataseries.SequenceDataSeries(maxLen)
+    aligned2 = dataseries.SequenceDataSeries(maxLen)
+    Syncer(ds1, ds2, aligned1, aligned2)
+    return (aligned1, aligned2)
+
+
+# This class is responsible for filling 2 dataseries when 2 other dataseries get new values.
+class Syncer(object):
+    def __init__(self, sourceDS1, sourceDS2, destDS1, destDS2):
+        self.__values1 = []  # (datetime, value)
+        self.__values2 = []  # (datetime, value)
+        self.__destDS1 = destDS1
+        self.__destDS2 = destDS2
+        sourceDS1.getNewValueEvent().subscribe(self.__onNewValue1)
+        sourceDS2.getNewValueEvent().subscribe(self.__onNewValue2)
+        # Source dataseries will keep a reference to self and that will prevent from getting this destroyed.
+
+    # Scan backwards for the position of dateTime in ds.
+    def __findPosForDateTime(self, values, dateTime):
+        ret = None
+        i = len(values) - 1
+        while i >= 0:
+            if values[i][0] == dateTime:
+                ret = i
+                break
+            elif values[i][0] < dateTime:
+                break
+            i -= 1
+        return ret
+
+    def __onNewValue1(self, dataSeries, dateTime, value):
+        pos2 = self.__findPosForDateTime(self.__values2, dateTime)
+        # If a value for dateTime was added to first dataseries, and a value for that same datetime is also in the second one
+        # then append to both destination dataseries.
+        if pos2 is not None:
+            self.__append(dateTime, value, self.__values2[pos2][1])
+            # Reset buffers.
+            self.__values1 = []
+            self.__values2 = self.__values2[pos2+1:]
+        else:
+            # Since source dataseries may not hold all the values we need, we need to buffer manually.
+            self.__values1.append((dateTime, value))
+
+    def __onNewValue2(self, dataSeries, dateTime, value):
+        pos1 = self.__findPosForDateTime(self.__values1, dateTime)
+        # If a value for dateTime was added to second dataseries, and a value for that same datetime is also in the first one
+        # then append to both destination dataseries.
+        if pos1 is not None:
+            self.__append(dateTime, self.__values1[pos1][1], value)
+            # Reset buffers.
+            self.__values1 = self.__values1[pos1+1:]
+            self.__values2 = []
+        else:
+            # Since source dataseries may not hold all the values we need, we need to buffer manually.
+            self.__values2.append((dateTime, value))
+
+    def __append(self, dateTime, value1, value2):
+        self.__destDS1.appendWithDateTime(dateTime, value1)
+        self.__destDS2.appendWithDateTime(dateTime, value2)
