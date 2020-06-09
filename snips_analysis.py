@@ -58,7 +58,8 @@ import numpy as np
 		df=pd.DataFrame(pd.read_csv(file_path))
 
 
-		pandas.read_csv('http://www.nasdaq.com/investing/etfs/etf-finder-results.aspx?download=Yes')['Symbol'].values
+		import pandas as pd
+		pd.read_csv('http://www.nasdaq.com/investing/etfs/etf-finder-results.aspx?download=Yes')['Symbol'].values
 
 
 		calls_df, = pd.read_html("http://apps.sandiego.gov/sdfiredispatch/", header=0, parse_dates=["Call Date"])
@@ -104,17 +105,15 @@ import numpy as np
 
 		# if you suggest 20%, it will neglect the best 10% of values
 		# and the worst 10% of values.
-		def trimmean(arr, per):
-			ratio = per/200
-			# /100 for easy calculation by *, and /2 for easy adaption to best and worst parts.
-			cal_sum = 0
-			# sum value to be calculated to trimmean.
-			arr.sort()
-			neg_val = int(len(arr)*ratio)
-			arr = arr[neg_val:len(arr)-neg_val]
-			for i in arr:
-				cal_sum += i
-			return cal_sum/len(arr)
+			def trimmean(arr, per):
+				ratio = per/200 # /100 for easy calculation by *, and /2 for easy adaption to best and worst parts.
+				cal_sum = 0 # sum value to be calculated to trimmean.
+				arr.sort()
+				neg_val = int(len(arr)*ratio)
+				arr = arr[neg_val:len(arr)-neg_val]
+				for i in arr:
+					cal_sum += i
+				return cal_sum/len(arr)
 
 
 		# If array, Min, Max value was given, it returns array that contains
