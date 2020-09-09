@@ -5,13 +5,11 @@
 # different ways of printing strings
 # Convert raw string integer inputs to integers
 # Concatenate long strings elegantly across line breaks in code
-# extract US numbers from text
 # clean spaces in strings
 # getting rid of extra white spaces
 # make translation of strings
 # Convert "1k" to 1 000, "1m" to 1 000 000, etc.
 # creates dictionary from string
-# all possible letter combinations
 # fuzzy matching
 # the most often occuring names using collection.Counter
 # Get vowels from a sentence
@@ -104,12 +102,6 @@ my_long_text = ("We are no longer the knights who say Ni! "
                 "ekki-p'tang-zoom-boing-z'nourrwringmm!")
 
 
-#--------------------------------------------------------------------------------------------------------		
-# extract US numbers from text
-import re
-numbers = ' 123.456.7889 (123)-456-7888 (425) 465-7523 456 123-7891 111 111.1111 (222)333-4444 666 777 8888 987-654-4321'
-res = re.findall(r'\d{3}\)*?\-*?\s*?\.*?\d{3}\-*?\s*?\.*?\d{3}', numbers)		
-
 #--------------------------------------------------------------------------------------------------------
 # clean spaces in strings
 		
@@ -148,6 +140,7 @@ def clean3(string): # clean string from rebundant spaces
     except:
 return string
 		
+
 #---------------------------------------------------------------------
 # getting rid of extra white spaces
 import string
@@ -195,37 +188,6 @@ for i, some_dict[i] in enumerate(some_string):
 some_dict
 
 #--------------------------------------------------------------------------------------------------------
-# all possible letter combinations
-"""
-Given a digit string, return all possible letter
-combinations that the number could represent.
-Input:Digit string "23"
-Output: ["ad", "ae", "af", "bd", "be", "bf", "cd", "ce", "cf"].
-"""
-
-def letter_combinations(digits):
-    if digits == "":
-        return []
-    kmaps = {
-        "2": "abc",
-        "3": "def",
-        "4": "ghi",
-        "5": "jkl",
-        "6": "mno",
-        "7": "pqrs",
-        "8": "tuv",
-        "9": "wxyz"
-    }
-    ans = [""]
-    for num in digits:
-        tmp = []
-        for an in ans:
-            for char in kmaps[num]:
-                tmp.append(an + char)
-        ans = tmp
-    return ans
-
-#--------------------------------------------------------------------------------------------------------
 # fuzzy matching with Levenshtein distance
 
 import difflib
@@ -248,24 +210,49 @@ print(cheese_count.most_common(3))
 # Prints: [('parmesan', 4), ('cheddar', 3), ('gouda', 2)]
 
 
-# ---------------------------------------------------------------------------------------------------
+
 # Get vowels from a sentence
-sentence = 'the rocket came back from mars'
-vowels = [i for i in sentence if i in 'aeiou'] # list
-unique_vowels = {i for i in sentence if i in 'aeiou'} # set
+    sentence = 'the rocket came back from mars'
+    vowels = [i for i in sentence if i in 'aeiou'] # list
+    unique_vowels = {i for i in sentence if i in 'aeiou'} # set
 
 
-
-#filter out companies that will complicate my taxes
+# filter out companies that will complicate my taxes
 	qvdf=qvdf[~qvdf['name'].str[-2:].str.contains('LP')]
 	qvdf=qvdf[~qvdf['name'].str[-3:].str.contains('LLC')]
 
 
-# ---------------------------------------------------------------------------------------------------
 # Create rows for values separated by commas in a cell
 
-d = {"Team":["FC Barcelona", "FC Real Madrid"], 
-    "Players":["Ter Stegen, Semedo, Piqué, Lenglet, Alba, Rakitic, De Jong, Sergi Roberto, Messi, Suárez, Griezmann",
-               "Courtois, Carvajal, Varane, Sergio Ramos, Mendy, Kroos, Valverde, Casemiro, Isco, Benzema, Bale"]}
-df = pd.DataFrame(d)
-df.assign(Players = df["Players"].str.split(",")).explode("Players")
+    d = {"Team":["FC Barcelona", "FC Real Madrid"], 
+        "Players":["Ter Stegen, Semedo, Piqué, Lenglet, Alba, Rakitic, De Jong, Sergi Roberto, Messi, Suárez, Griezmann",
+                "Courtois, Carvajal, Varane, Sergio Ramos, Mendy, Kroos, Valverde, Casemiro, Isco, Benzema, Bale"]}
+    df = pd.DataFrame(d)
+    df.assign(Players = df["Players"].str.split(",")).explode("Players")
+
+
+#-------------------------------------------------------------------------------------------------------
+
+s.endswith(suffix)     # Check if string ends with suffix
+s.find(t)              # First occurrence of t in s
+s.index(t)             # First occurrence of t in s
+s.join(slist)          # Join a list of strings using s as delimiter
+s.replace(old,new)     # Replace text
+s.rfind(t)             # Search for t from end of string
+s.rindex(t)            # Search for t from end of string
+s.split([delim])       # Split string into list of substrings
+s.startswith(prefix)   # Check if string starts with prefix
+s.strip()              # Strip leading/trailing space
+
+
+
+# Filter out all words with three characters or less
+    # Filtering out words that don’t contribute a lot of meaning
+    text = '''
+            Call me Ishmael. Some years ago - never mind how long precisely - having
+            little or no money in my purse, and nothing particular to interest me
+            on shore, I thought I would sail about a little and see the watery part
+            of the world. It is a way I have of driving off the spleen, and regulating
+            the circulation. - Moby Dick'''
+    w = [[x for x in line.split() if len(x)>3] for line in text.split('\n')]
+

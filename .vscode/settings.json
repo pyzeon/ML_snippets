@@ -1,3 +1,8 @@
 {
-    "python.pythonPath": "C:\\Users\\oanuf\\Anaconda3\\python.exe"
+    "python.pythonPath": "C:\\Users\\oanuf\\anaconda3\\python.exe",
+    "python.linting.enabled": false,
+    "python.linting.lintOnSave": false,
+    "python.linting.maxNumberOfProblems": 1,
+    "python.linting.pylintEnabled": false,
+    "python.linting.pylintUseMinimalCheckers": false
 }

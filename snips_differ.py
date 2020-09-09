@@ -1,5 +1,6 @@
 
 help(len)
+
 len? # help on an object
 
 L = [1, 2, 3]
@@ -10,7 +11,9 @@ square?? # reading the source code
 L.<TAB> # see a list of all available attributes of an object
 L.c<TAB>
 from itertools import co<TAB>
-import <TAB> # see which imports are available
+
+import <TAB>
+ # see which imports are available
 
 
 str.*find*? # looking for a string method that contains the word find somewhere
@@ -105,14 +108,40 @@ board_new = [[""]*3 for _ in range(3)]
 board_new[0][0] = "Y"
 board_new   # ==> [['Y', '', ''], ['', '', ''], ['', '', '']]
 
+
+
+email_address = None
+if email_address:
+    send_email(email_address, msg)
+
+
+
+
 #-----------------------------------------------------------------
 # lists
+
+# Use a list when the order of the data matters. Remember that lists can hold any kind of object.
+portfolio = [
+    ('GOOG', 100, 490.1),
+    ('IBM', 50, 91.3),
+    ('CAT', 150, 83.44)
+]
+
+portfolio[0]            # ('GOOG', 100, 490.1)
+portfolio[2]            # ('CAT', 150, 83.44)
+
+
 
 # lists could contain different types of elements: strings, other lists, dictionaries, functions
 []
 [1]
 [1,2,3,4,5,6,7,8]
 [1,"two",34.234,{"a","b"},(5,6)]
+
+
+line = 'GOOG,100,490.10'
+row = line.split(',') # row: ['GOOG', '100', '490.10']
+
 
 # list initialization: common one for working with large lists 
 # whose size is known ahead of time
@@ -168,6 +197,7 @@ integers_found_so_far # Booleans are a subclass of int
     first.append(second)
     first.extend(third)
     first
+    second + third
 
     x[8:9]=[]
     x.pop() # Remove from the end
@@ -180,56 +210,93 @@ integers_found_so_far # Booleans are a subclass of int
 # -----------------------------------------------------------------------------------
 # DICTIONARIES
 # Python´s hash tables
+# Dictionaries are useful if you want fast random lookups (by key name). 
 
-y = {}
-y[0] = "Hallo"
-y[1] = "Goodbye"
 
-y["two"] = 2 # dictionary keys may be numbers, strings, etc (for lists - only integers)
-y["pi"] = 3.14
-y["two"]*y["pi"]
+    y = {}
+    y[0] = "Hallo"
+    y[1] = "Goodbye"
 
-x = (1,2,3,4,5)
-y = ("one","two","three","four","five")
-dict(zip(x,y))
+    y["two"] = 2 # dictionary keys may be numbers, strings, etc (for lists - only integers)
+    y["pi"] = 3.14
+    y["two"]*y["pi"]
 
-some_string = "snowboard"
-some_dict = {}
-for i, some_dict[i] in enumerate(some_string):
-    pass
-some_dict
+    x = (1,2,3,4,5)
+    y = ("one","two","three","four","five")
+    dict(zip(x,y))
 
+    some_string = "snowboard"
+    some_dict = {}
+    for i, some_dict[i] in enumerate(some_string):
+        pass
+    some_dict
+
+
+    prices = {
+    'GOOG': 513.25,
+    'CAT': 87.22,
+    'IBM': 93.37,
+    'MSFT': 44.12
+    }
+    prices['IBM'] # 93.37
+
+    # Composite keys
+    holidays = {
+    (1, 1) : 'New Years',
+    (3, 14) : 'Pi day',
+    (9, 13) : "Programmer's day",
+    }
+    holidays[3, 14] # 'Pi day'
+
+    # Sets are collection of unordered unique items
+    # Sets are useful for membership tests
+    # Sets are also useful for duplicate elimination
+        names = ['IBM', 'AAPL', 'GOOG', 'IBM', 'GOOG', 'YHOO']
+        unique = set(names) # unique = set(['IBM', 'AAPL','GOOG','YHOO'])
 
 # -----------------------------------------------------------------------------------
 # LOOPS
-item_list = [3, "string1", 23, 14.0, "string2", 49, 64,70]
-for x in item_list: # Python’s for loop iterates over each of the items in a sequence (more of a foreach loop)
-    if not isinstance(x,int):
-        continue # If x isn’t an integer, the rest of this iteration is aborted by the continue statement
-    if not x%7: # finds the first occurrence of an integer that’s divisible by 7
-        print("Found an integer divisible by seven: %d" % x)
-        break
-        
+    item_list = [3, "string1", 23, 14.0, "string2", 49, 64,70]
+    for x in item_list: # more of a foreach loop
+        if not isinstance(x,int):
+            continue # If x isn’t an integer, the rest of this iteration is aborted by the continue statement
+        if not x%7: # finds the first occurrence of an integer that’s divisible by 7
+            print("Found an integer divisible by seven: %d" % x)
+            break
+            
+
+    for animal in ["dog", "cat", "mouse"]:
+        print("{} is a mammal".format(animal))
+
+    names = ['Elwood', 'Jake', 'Curtis']
+    for i, name in enumerate(names):
+        # Loops with i = 0, name = 'Elwood'
+        # i = 1, name = 'Jake'
+        # i = 2, name = 'Curtis'
 
 
-for animal in ["dog", "cat", "mouse"]:
-    print("{} is a mammal".format(animal))
+    for name in namelist:
+        if name == 'Jake':
+            break
+        ...
+        # statements
 
 
-for i in range(4):
-    print(i)
+    # If you need to count, use range()
+    for i in range(100):
+        # i = 0,1,...,99
+    for j in range(10,20):
+        # j = 10,11,..., 19
+    for k in range(10,50,2):
+        # k = 10,12,...,48
+        # Notice how it counts in steps of 2, not 1.
 
 
-
-
-
-# -----------------------------------------------------------------------------------
-# chained comparison with all kind of operators
-a = 10
-print(1 < a < 50)
-print(10 == a < 20)
-
-
+    points = [  (1, 4),(10, 40),(23, 14),(5, 6),(7, 8) ]
+    for x, y in points:
+        # Loops with x = 1, y = 4
+        #            x = 10, y = 40
+        #            x = 23, y = 14
 
 # -----------------------------------------------------------------------------------
 # calling different functions with same arguments based on condition
@@ -243,170 +310,157 @@ b = True
 print((product if b else subtract)(1, 1))
 
 
-# -----------------------------------------------------------------------------------
-
-def ls(dir="."):
-    """ List files in current directory or directory passed as parameter """
-    import os # Inside the method to avoid it being added to global namespace
-    return [os.path.abspath(dir), os.listdir(dir)]
-
-
 
 # --------------------------------------------------------------------
+# Else with Try/Except
+    # You can have an 'else' clause with try/except. It gets excecuted if no exception is raised.
+    # This allows you to put less happy-path code in the 'try' block ...
+    # so you can be more sure of where a caught exception came from.
 
-""" You can have an 'else' clause with try/except. 
-    It gets excecuted if no exception is raised.
-    This allows you to put less happy-path code in the 'try' block so you can be 
-    more sure of where a caught exception came from."""
-
-try:
-    1 + 1
-except TypeError:
-    print("Oh no! An exception was raised.")
-else:
-    print("Oh good, no exceptions were raised.")
-
-#--------------------------------------------------------------------------------------------------------
-# else gets called when for loop does not reach break statement
-a = [1, 2, 3, 4, 5]
-for el in a:
-    if el == 0:
-        break
-else:
-     print('did not break out of for loop')
+    try:
+        1 + 1
+    except TypeError:
+        print("Oh no! An exception was raised.")
+    else:
+        print("Oh good, no exceptions were raised.")
 
 
-
-
+    # else gets called when for loop does not reach break statement
+    a = [1, 2, 3, 4, 5]
+    for el in a:
+        if el == 0:
+            break
+    else:
+        print('did not break out of for loop')
 
 #--------------------------------------------------------------
-# CREATION OF PACKAGE
+# CREATION OF PACKAGE: Python modules are just ordinary Python files. 
 
-# Python modules are just ordinary Python files. 
+    import sys
+    sys.path
+    # When you ask Python to import a module, ...
+    # ... it starts with the first directory in sys.path ...
+    # ... and checks for an appropriate file. 
+    # If no match is found in the first directory it checks subsequent entries, in order, until a match is found 
 
-import sys
-sys.path
-# When you ask Python to import a module, ...
-# ... it starts with the first directory in sys.path ...
-# ... and checks for an appropriate file. 
-# If no match is found in the first directory it checks subsequent entries, in order, until a match is found 
-
-# To create a normal module ...
-# ... you simply createa Python source file in a directory contained in sys.path. 
-# The process for creating packages is not much different. 
+    # To create a normal module ...
+    # ... you simply createa Python source file in a directory contained in sys.path. 
+    # The process for creating packages is not much different. 
 
 
+    # You can write your own, and import them. The name of the module is the same as the name of the file.
+
+    '''File wo.py'''
+
+    def word_occur():           # new function, which counts occurrences of words in a file
+        file_name = input("Enter the name of the file:") # Prompt user for the name of the file to use
+        f = open(file_name, "r")
+        word_list = f.read().split() # store words from the file in a list
+        f.close()
+        
+        occurs_dict={}
+        for word in word_list:
+            occurs_dict[word] = occurs_dict.get(word,0) + 1 # increment the occurrences count for this word 
+        print("File %s has %d words (%d are unique)", % (file_name, len(word_list), len(occurs_dict)))
+        print(occur_dict)
+        
+    if __name__=='__main__': # this allows the program to be run as a script by typing "python wo.py" at a command line
+        word_occur
+        
+    '''end of the file wo.py'''    
+        
+    # If you place a file in one of the directories on the module search path, ...
+    # ... which can be found in sys.path, ...
+    # ... it can be imported like any of the built-in library modules by using the import statement:
+
+    import wo
+    wo.word_occur()
+
+    # Note that if you change the file wo.py on disk, ...
+    # ... import won’t bring your changes into the same interactive session. 
+    # You use the reload function from the imp library in this situation:
+
+    import imp
+    imp.reload(wo)
+
+    import re
+    dir(re) # which functions and attributes are defined in a module.
+
+    # There are also anonymous functions
+    (lambda x: x > 2)(3)                  # => True
+    (lambda x, y: x ** 2 + y ** 2)(2, 1)  # => 5
 
 
-# You can write your own, and import them. The name of the module is the same as the name of the file.
+    # To create a package, ...
+    # 1) create the package’s root directory. 
+    #        This root directory needs to be in some directory on sys.path
+    #        remember, this is how Python finds modules and packages for importing. 
+    # 2) In that root directory, you create a file called __init__.py. 
+    #        This file — which we’ll often call the package init file — is what makes the package a module. 
+    #        __init__.py can be(and often is) empty;
+    #        its presence alone suffices to establish the package.
 
-'''File wo.py'''
+    # In Shell:
+    # mkdir Anaconda3/reader
+    # type Anaconda3/reader/__init__.py
 
-def word_occur():           # new function, which counts occurrences of words in a file
-    file_name = input("Enter the name of the file:") # Prompt user for the name of the file to use
-    f = open(file_name, "r")
-    word_list = f.read().split() # store words from the file in a list
-    f.close()
-    
-    occurs_dict={}
-    for word in word_list:
-        occurs_dict[word] = occurs_dict.get(word,0) + 1 # increment the occurrences count for this word 
-    print("File %s has %d words (%d are unique)", % (file_name, len(word_list), len(occurs_dict)))
-    print(occur_dict)
-    
-if __name__=='__main__': # this allows the program to be run as a script by typing "python wo.py" at a command line
-    word_occur
-    
-'''end of the file wo.py'''    
-    
-    
-    
-# If you place a file in one of the directories on the module search path, ...
-# ... which can be found in sys.path, ...
-# ... it can be imported like any of the built-in library modules by using the import statement:
-
-import wo
-wo.word_occur()
-
-# Note that if you change the file wo.py on disk, ...
-# ... import won’t bring your changes into the same interactive session. 
-# You use the reload function from the imp library in this situation:
-
-import imp
-imp.reload(wo)
-
-
-
-import re
-dir(re) # which functions and attributes are defined in a module.
-
-# There are also anonymous functions
-(lambda x: x > 2)(3)                  # => True
-(lambda x, y: x ** 2 + y ** 2)(2, 1)  # => 5
-
-
-
-# To create a package, ...
-# 1) create the package’s root directory. 
-#        This root directory needs to be in some directory on sys.path
-#        remember, this is how Python finds modules and packages for importing. 
-# 2) In that root directory, you create a file called __init__.py. 
-#        This file — which we’ll often call the package init file — is what makes the package a module. 
-#        __init__.py can be(and often is) empty;
-#        its presence alone suffices to establish the package.
-
-# In Shell:
-# mkdir Anaconda3/reader
-# type Anaconda3/reader/__init__.py
-
-import reader
-type(reader) # => module, even though on our filesystem the name “reader” refers to a directory
-reader.__file__
+    import reader
+    type(reader) # => module, even though on our filesystem the name “reader” refers to a directory
+    reader.__file__
 
 # ------------------------------------------------------------------
 # try ... catch
 
-try:
-  df_input = df_input.loc[:,(met_model,model_params['variables'],slice(None))]
-except KeyError as e:
-  logger.warning(met_model+' not available : skipping it')
-  continue
+    try:
+    df_input = df_input.loc[:,(met_model,model_params['variables'],slice(None))]
+    except KeyError as e:
+    logger.warning(met_model+' not available : skipping it')
+    continue
 
 
-error_messages=[]
-try:
-    for i in pool_result:                                                                                                                                                      
-        try:
-            result = i.get()
-        except Exception as err:
-            error_messages+=(err)
-except Exception as outer_err:
-    error_messages+=(outer_err)
+    error_messages=[]
+    try:
+        for i in pool_result:                                                                                                                                                      
+            try:
+                result = i.get()
+            except Exception as err:
+                error_messages+=(err)
+    except Exception as outer_err:
+        error_messages+=(outer_err)
 
 
-if len(error_messages)==0:
-    logger.info('**************************************** ')
-    logger.info('*         Succesfully finished         * ')
-    logger.info('**************************************** ')
-else:
-    logger.error(error_messages)
-
-
+    if len(error_messages)==0:
+        logger.info('**************************************** ')
+        logger.info('*         Succesfully finished         * ')
+        logger.info('**************************************** ')
+    else:
+        logger.error(error_messages)
 
 # -------------------------------------------------------------------------------
 #Push to G Drive
 
-#https://medium.com/@annissouames99/how-to-upload-files-automatically-to-drive-with-python-ee19bb13dda                                                   
-#pip install PyDrive is needed                                                                                                                           
+    #https://medium.com/@annissouames99/how-to-upload-files-automatically-to-drive-with-python-ee19bb13dda                                                   
+    #pip install PyDrive is needed                                                                                                                           
 
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
-import os
-g_login = GoogleAuth()
-g_login.LocalWebserverAuth()
-drive = GoogleDrive(g_login)
+    from pydrive.auth import GoogleAuth
+    from pydrive.drive import GoogleDrive
+    import os
+    g_login = GoogleAuth()
+    g_login.LocalWebserverAuth()
+    drive = GoogleDrive(g_login)
 
-with open("results/file_to_be_pushed","r") as file:
-    file_drive = drive.CreateFile({'title':os.path.basename(file.name) })
-    file_drive.SetContentString(file.read())
-    file_drive.Upload()
+    with open("results/file_to_be_pushed","r") as file:
+        file_drive = drive.CreateFile({'title':os.path.basename(file.name) })
+        file_drive.SetContentString(file.read())
+        file_drive.Upload()
+
+# -------------------------------------------------------------------------------
+# Print with delay
+
+    from time import sleep
+
+    def delay(fn, ms, *args):
+    sleep(ms / 1000)
+    return fn(*args)
+
+    delay(lambda x: print(x),1000,'later') # prints 'later' after one second
