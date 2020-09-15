@@ -43,6 +43,23 @@ AAPL=AAPL.drop(AAPL.columns[[-1]],axis=1) # delete last column
 
     daily_sales = df.resample("D")["sales"].sum().to_frame() # agregate by day
 
+
+    #convert tick data to 15 minute data
+        data_frame = pd.read_csv(tick_data_file, 
+                                names=['id', 'deal', 'Symbol', 'Date_Time', 'Bid', 'Ask'], 
+                                index_col=3, parse_dates=True, skiprows= 1)
+        ohlc_M15 =  data_frame['Bid'].resample('15Min').ohlc()
+        ohlc_H1 = data_frame['Bid'].resample('1H').ohlc()
+        ohlc_H4 = data_frame['Bid'].resample('4H').ohlc()
+        ohlc_D = data_frame['Bid'].resample('1D').ohlc()
+
+    def resample( data ):
+        dat       = data.resample( rule='1min', how='mean').dropna()
+        dat.index = dat.index.tz_localize('UTC').tz_convert('US/Eastern')
+        dat       = dat.fillna(method='ffill')
+        return dat
+
+
 # Examples of filtering dataframe by date
     impactful_data['timestamp_af'] = impactful_data['timestamp'].apply(lambda x: self.utc_to_local(x))
 
@@ -54,7 +71,6 @@ AAPL=AAPL.drop(AAPL.columns[[-1]],axis=1) # delete last column
     stock_data = stock_data.loc[mask] # rebuild our dataframe
 
     df['CohortIndex_d'] = (df['last_active_date'] - df['signup_date']).dt.days # new column with the difference between the two dates
-
 
 
 # Create date ranges
@@ -87,6 +103,107 @@ AAPL=AAPL.drop(AAPL.columns[[-1]],axis=1) # delete last column
 	df['data']=np.random.randn(len(df))
 	df.index = pd.to_datetime(df[datecols])
 
+
+# Align 2 datetime series and interpolate if necessary
+
+    from datetime import date, time
+    import numpy as np
+    from ..errors import MqValueError
+
+    def __interpolate_step(x: pd.Series, dates: pd.Series = None) -> pd.Series:
+        if x.empty:
+            raise MqValueError('Cannot perform step interpolation on an empty series')
+
+        first_date = pd.Timestamp(dates.index[0]) if isinstance(x.index[0], pd.Timestamp) else dates.index[0]
+
+        # locate previous valid date or take first value from series
+        prev = x.index[0] if first_date < x.index[0] else x.index[x.index.get_loc(first_date, 'pad')]
+
+        current = x[prev]
+
+        curve = x.align(dates, 'right', )[0]                  # only need values from dates
+
+        for knot in curve.iteritems():
+            if np.isnan(knot[1]):
+                curve[knot[0]] = current
+            else:
+                current = knot[1]
+        return curve
+
+    def interpolate(x: pd.Series, dates: Union[List[date], List[time], pd.Series] = None,
+                    method: Interpolate = Interpolate.INTERSECT) -> pd.Series:
+        """
+        Interpolate over specified dates or times
+        Stepwize interpolation of series based on dates in second series:
+
+        >>> a = generate_series(100)
+        >>> b = generate_series(100)
+        >>> interpolate(a, b, Interpolate.INTERSECT)
+
+        """
+        if dates is None:
+            dates = x
+
+        if isinstance(dates, pd.Series):
+            align_series = dates
+        else:
+            align_series = pd.Series(np.nan, dates)
+
+        if method == Interpolate.INTERSECT: # Only returns a value for valid dates
+            return x.align(align_series, 'inner')[0]
+        if method == Interpolate.NAN: # Value will be NaN for dates not present in the series
+            return x.align(align_series, 'right')[0]
+        if method == Interpolate.ZERO: # Value will be zero for dates not present in the series
+            align_series = pd.Series(0.0, dates)
+            return x.align(align_series, 'right', fill_value=0)[0]
+        if method == Interpolate.STEP: # Value of the previous valid point
+            return __interpolate_step(x, align_series)
+        else:
+            raise MqValueError('Unknown intersection type: ' + method)
+
+    def align(x: Union[pd.Series, Real], 
+            y: Union[pd.Series, Real], 
+            method: Interpolate = Interpolate.INTERSECT) -> \
+            Union[List[pd.Series], List[Real]]:
+    
+        """
+        Align dates of two series or scalars
+        Stepwize interpolation of series based on dates in second series:
+
+        >>> a = generate_series(100)
+        >>> b = generate_series(100)
+        >>> align(a)
+
+        """
+        if isinstance(x, Real) and isinstance(y, Real):
+            return [x, y]
+        if isinstance(x, Real):
+            return [pd.Series(x, index=y.index), y]
+        if isinstance(y, Real):
+            return [x, pd.Series(y, index=x.index)]
+
+        if method == Interpolate.INTERSECT: # Resultant series only have values on the intersection of dates /times
+            return x.align(y, 'inner')
+        if method == Interpolate.NAN: # Values will be NaN for dates or times only present in the other series
+            return x.align(y, 'outer')
+        if method == Interpolate.ZERO: # Values will be zero for dates or times only present in the other series
+            return x.align(y, 'outer', fill_value=0)
+        if method == Interpolate.TIME: # Missing values surrounded by valid values will be interpolated
+            new_x, new_y = x.align(y, 'outer')
+            new_x.interpolate('time', limit_area='inside', inplace=True)
+            new_y.interpolate('time', limit_area='inside', inplace=True)
+            return [new_x, new_y]
+        if method == Interpolate.STEP: # use the value of the previous valid point
+            new_x, new_y = x.align(y, 'outer')
+            new_x.fillna(method='ffill', inplace=True)
+            new_y.fillna(method='ffill', inplace=True)
+            new_x.fillna(method='bfill', inplace=True)
+            new_y.fillna(method='bfill', inplace=True)
+            return [new_x, new_y]
+        else:
+            raise MqValueError('Unknown intersection type: ' + method)
+
+
 # -------------------------------------------------------------------------------------------------------------
 # Business days and biz hours
 	start = datetime(2018,10,1), end = datetime(2018,10,10)
@@ -116,6 +233,19 @@ AAPL=AAPL.drop(AAPL.columns[[-1]],axis=1) # delete last column
 	pd.offsets.BusinessHour() # from 9 till 17
 	rng = pd.date_range("2018-01-10","2018-01-15",freq="BH") # BH is "business hour"
 	rng+pd.DateOffset(months=2,hours=3)
+
+    def month_weekdays(year_int, month_int):
+        """
+    Produces a list of datetime.date objects representing the
+    weekdays in a particular month, given a year.
+    """
+    cal = calendar.Calendar()
+    return [
+        d for d in cal.itermonthdates(year_int, month_int)
+        if d.weekday() < 5 and d.year == year_int
+    ]
+
+
 
 
     # biz days btw 2 dates
@@ -197,6 +327,60 @@ AAPL=AAPL.drop(AAPL.columns[[-1]],axis=1) # delete last column
     cal_sse.advance_date('20170427', '-1m', return_string=True) # => '2017-03-27'
 
     cal_sse.schedule('2018-01-05', '2018-02-01', '1w', return_string=True, date_generation_rule=2) # => ['2018-01-05', '2018-01-12', '2018-01-19', '2018-01-26', '2018-02-01']
+
+# Holiday detection for US Markets
+    import datetime as dt
+    import pandas.tseries.holiday as pd_holiday
+
+    class USTradingCalendar(pd_holiday.AbstractHolidayCalendar):
+        rules = [
+            pd_holiday.Holiday('NewYearsDay',month=1,day=1,observance=pd_holiday.nearest_workday),
+            pd_holiday.USMartinLutherKingJr,
+            pd_holiday.USPresidentsDay,
+            pd_holiday.GoodFriday,
+            pd_holiday.USMemorialDay,
+            pd_holiday.Holiday('USIndependenceDay',month=7,day=4,observance=pd_holiday.nearest_workday),
+            pd_holiday.USLaborDay,
+            pd_holiday.USThanksgivingDay,
+            pd_holiday.Holiday('Christmas',month=12,day=25,observance=pd_holiday.nearest_workday)
+        ]
+
+    def get_trading_close_holidays(year=None):
+        use_year = year
+        if not use_year:
+            use_year = int(dt.datetime.utcnow().year)
+        inst = USTradingCalendar()
+        return inst.holidays(
+            dt.datetime(use_year-1, 12, 31),
+            dt.datetime(use_year, 12, 31))
+
+    def is_holiday(date=None,date_str=None,fmt='%Y-%m-%d'):
+        cal_df = None
+        use_date = dt.datetime.utcnow()
+        if date:
+            use_date = date
+        else:
+            if date_str:
+                use_date = dt.datetime.strptime(date_str,fmt)
+        cal_df = get_trading_close_holidays(year=use_date.year)
+        use_date_str = use_date.strftime(fmt)
+        for d in cal_df.to_list():
+            if d.strftime(fmt) == use_date_str:
+                return True
+        return False
+
+# list of weekdays in a particular year-month
+    import calendar
+    def month_weekdays(year_int, month_int):
+        """
+        Produces a list of datetime.date objects representing the
+        weekdays in a particular month, given a year.
+        """
+        cal = calendar.Calendar()
+        return [
+            d for d in cal.itermonthdates(year_int, month_int)
+            if d.weekday() < 5 and d.year == year_int
+        ]
 
 # Is it holiday for markets?
     from holidays import UnitedStates

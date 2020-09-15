@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import datetime
 
 # Series creation
 		pd.Series([1,2,3,4])
@@ -47,6 +48,21 @@ import numpy as np
 		N, M = 20, 4
 		A = np.random.randn(N, M) + np.arange(M)/4 # generate a random array, add a small constant to each column
 		df = pd.DataFrame(A) # converts numpy array to pandas df
+
+
+		# Generate and plot random walks
+			# Generate normally distributed errors
+			randos = [np.random.randn(100) for i in range(100)]
+			y = np.random.randn(100)
+			# Generate random walks
+			randows = [[sum(rando[:i+1]) for i in range(100)] for rando in randos]
+			yw = [sum(y[:i+1]) for i in range(100)]
+
+			plt.figure(figsize=(15,7))
+			for i in range(100):
+				plt.plot(randows[i], alpha=0.5)
+			plt.show()  
+
 
 
 		# create a dataframe
@@ -114,15 +130,28 @@ import numpy as np
 
 
 
-		spyderdat = pd.read_csv("/home/curtis/Downloads/HistoricalQuotes.csv")
-		spyderdat = pd.DataFrame(spyderdat.loc[:, ["open", "high", "low", "close", "close"]]
-								.iloc[1:].as_matrix(),
-								index=pd.DatetimeIndex(spyderdat.iloc[1:, 0]),
-								columns=["Open", "High", "Low", "Close", "Adj Close"])
-					.sort_index()
-		spyder = spyderdat.loc[start:end]
-		stocks = stocks.join(spyder.loc[:, "Adj Close"])
-						.rename(columns={"Adj Close": "SPY"})
+		# from quandl
+			import quandl
+			start = datetime.datetime(2016,1,1)
+			end = datetime.date.today()
+			
+			apple, microsoft, google = (quandl.get("WIKI/" + s, start_date=start, end_date=end) 
+										for s in ["AAPL", "MSFT", "GOOG"])
+			
+			stocks = pd.DataFrame({"AAPL": apple["Adj. Close"],
+								"MSFT": microsoft["Adj. Close"],
+								"GOOG": google["Adj. Close"]})
+
+			spyderdat = pd.read_csv("/home/curtis/Downloads/HistoricalQuotes.csv") # from http://www.nasdaq.com/symbol/spy/historical
+			spyderdat = pd.DataFrame(spyderdat.loc[:, ["open", "high", "low", "close", "close"]]
+									.iloc[1:].as_matrix(),
+									index=pd.DatetimeIndex(spyderdat.iloc[1:, 0]),
+									columns=["Open", "High", "Low", "Close", "Adj Close"])
+						.sort_index()
+			spyder = spyderdat.loc[start:end]
+			stocks = stocks.join(spyder.loc[:, "Adj Close"])
+							.rename(columns={"Adj Close": "SPY"})
+
 
 
 # Analysing series -------------------------------------------------------
@@ -217,7 +246,7 @@ import numpy as np
 			print(Z[index])
 
 
-# Comparing several series -------------------------------------------------------
+# Comparing several series / dataframes -------------------------------------------------------
 
 		# find common values between two arrays
 		Z1 = np.random.randint(0,10,10)
@@ -258,6 +287,65 @@ import numpy as np
 		y = [1, 2, 2, 3, 4, 5]
 		all_unique(x) # True
 		all_unique(y) # False
+
+
+	# Comparison of dataframes
+		def overlap_by_symbol(old_df: pd.DataFrame, new_df: pd.DataFrame, overlap: int):
+			"""
+			Overlap dataframes for timestamp continuity. 
+			Prepend the end of old_df to the beginning of new_df, grouped by symbol.
+			If no symbol exists, just overlap the dataframes
+			:param old_df: old dataframe
+			:param new_df: new dataframe
+			:param overlap: number of time steps to overlap
+			:return DataFrame with changes
+			"""
+			if isinstance(old_df.index, pd.MultiIndex) and isinstance(new_df.index, pd.MultiIndex):
+				old_df_tail = old_df.groupby(level='symbol').tail(overlap)
+
+				old_df_tail = old_df_tail.drop(set(old_df_tail.index.get_level_values('symbol')) - set(new_df.index.get_level_values('symbol')), level='symbol')
+
+				return pd.concat([old_df_tail, new_df], sort=True)
+			else:
+				return pd.concat([old_df.tail(overlap), new_df], sort=True)
+
+	# Compare 2 datasets of quotes: inner merger
+		def pair_data_verifier(array_df_data, pair_tickers, threshold=10):
+			"""
+			merge two dataframes, 
+			verify if we still have the same number of data we originally had.
+			use an inputted threshold that tells us 
+			whether we've lost too much data in our merge or not.
+			threshold: max number of days of data 
+					we can be missing after merging
+			"""
+			stock_1 = pair_tickers[0]
+			stock_2 = pair_tickers[1]
+			df_merged = pd.merge(array_df_data[0], array_df_data[1], 
+								left_on=['Date'], right_on=['Date'], 
+								how='inner')
+			
+			new_col_names = ['Date', stock_1, stock_2] 
+			df_merged.columns = new_col_names
+			# round columns
+			df_merged[stock_1] = df_merged[stock_1].round(decimals = 2)
+			df_merged[stock_2] = df_merged[stock_2].round(decimals = 2)
+			
+			new_size = len(df_merged.index)
+			old_size_1 = len(array_df_data[0].index)
+			old_size_2 = len(array_df_data[1].index)
+
+			print("Pairs: {0} and {1}".format(stock_1, stock_2))
+			print("New merged df size: {0}".format(new_size))
+			print("{0} old size: {1}".format(stock_1, old_size_1))
+			print("{0} old size: {1}".format(stock_2, old_size_2))
+
+			if (old_size_1 - new_size) > threshold or (old_size_2 - new_size) > threshold:
+				print("This pair {0} and {1} were missing data.".format(stock_1, stock_2))
+				return False
+			else:
+				return df_merged
+
 
 
 # Changing series -------------------------------------------------------
@@ -333,6 +421,16 @@ import numpy as np
 		profile.to_file(outputfile="AAPL_data_report.html")
 
 
+		# most often occuring names using collection.Counter
+			from collections import Counter
+			cheese = ["gouda", "brie", "feta", "cream cheese", "feta", "cheddar",
+					"parmesan", "parmesan", "cheddar", "mozzarella", "cheddar", "gouda",
+					"parmesan", "camembert", "emmental", "camembert", "parmesan"]
+			cheese_count = Counter(cheese) # Counter is just a dictionary that maps items to number of occurrences
+			# use update(more_words) method to easily add more elements to counter
+			print(cheese_count.most_common(3)) # Prints: [('parmesan', 4), ('cheddar', 3), ('gouda', 2)]
+
+
 		# memory usage
 			AAPL.info(memory_usage = "deep") # Show the global usage of memory of the df"
 			AAPL.memory_usage(deep = True) # Show the usage of memory of every column
@@ -347,7 +445,6 @@ import numpy as np
 			df.add_prefix("1_")
 			df.add_suffix("_Z")
 
-		data['educ'] = pd.to_numeric(data['educ'],errors='coerce') # errors='coerce' means that we force the conversation. noncovertable are set to NaN
 
 		# different fillna for every column
 			df.fillna({	'temp':0,
@@ -383,7 +480,7 @@ import numpy as np
 				UC=USDCHF.dropna()
 				df1.dropna(axis = "rows") # drop any row that has missing values
 
-		# Appending rows
+		# Appending & Changing rows
 			UC_new= UC.nlargest(20,'Volume')
 			UC_new.append(UC.nlargest(20,'Minute_ClCl'))
 
@@ -401,6 +498,32 @@ import numpy as np
 				gasoline_price_df.loc[index,'Gasoline_Price']=anomaly_value
 				gasoline_price_df.loc[index,'Artificially_Generated_Anomaly']=1
 
+			# delete $ from string
+				df.state_bottle_retail.str.replace('$','') # 4.5*X ms: replaces the ‘$’ with a blank space for each item in the column
+				df.state_bottle_retail.apply(lambda x: x.replace('$','')) # 4*X ms: pandas ‘apply’ method, which is optimized to perform operations over a pandas column
+				df.state_bottle_retail.apply(lambda x: x.strip('$')) # 3*X ms: strip does one less operation: just takes out the ‘$.’
+				df.state_bottle_retail = [x.strip('$') for x in df.state_bottle_retail] # 2*X ms: list comprehension
+				df.state_bottle_retail = [x[1:] for x in df.state_bottle_retail] # X ms: built in [] slicing, [1:] slices each string from 2nd value till end
+
+			data['educ'] = pd.to_numeric(data['educ'],errors='coerce') # errors='coerce' means that we force the conversation. noncovertable are set to NaN
+
+			# Remove dubpicates from rows:
+			   # 	0  1    2    3
+			   # 0  A  B    C    D
+			   # 1  A  D    C  NaN
+			   # 2  C  B  NaN  NaN
+			   # 3  B  A  NaN  NaN
+
+				pd.DataFrame(list(map(pd.unique, df.values)))
+				pd.DataFrame(df.apply(pd.Series.unique, axis=1).tolist())
+
+
+
+
+
+
+
+
 		# creating new columns
 			NQ100['Capitalisation']=NQ100.Last*NQ100.share_volume
 			NQ100['Random']=Series(np.random.normal(size=len(NQ100)),index=NQ100.index)
@@ -415,6 +538,14 @@ import numpy as np
 			df[[one,two]] = df[orig].str.split(separator,expand=True)
 
 			AAPL['Week_Vol']=AAPL["Volume"].rolling(5)
+			apple["20d"] = np.round(apple["Adj. Close"]
+										.rolling(window = 20, center = False)
+										.mean(), 
+			                        2)
+
+
+			apple["Regime"] = np.where(apple['20d-50d'] > 0, 1, 0) # np.where() is a vectorized if-else function
+
 
 
 # Extracting sub-set from DF --------------------------------------------------------------
@@ -459,6 +590,20 @@ import numpy as np
 			limit(data, 40,70)
 
 
+		# identify outliers using 3 sigma approach ----
+
+			df_ma = df[['simple_rtn']].rolling(window=21).agg(['mean', 'std']) #calculate rolling mean and standard deviation
+			df_ma.columns = df_ma.columns.droplevel() # drop multi-level index
+			df_outliers = df.join(df_ma)
+			df_outliers['outlier'] = [1 if (x > mu + 3 * sigma) 
+										or (x < mu - 3 * sigma) else 0 
+									for x, mu, sigma in zip(df_outliers.simple_rtn, 
+																df_outliers['mean'], 
+																df_outliers['std'])] 
+			outliers = df_outliers.loc[df_outliers['outlier'] == 1, ['simple_rtn']]
+
+
+
 		AAPL['Volume'].mean()
 		AAPL['Volume'].std() # mix(), max(), std()
 
@@ -480,7 +625,6 @@ import numpy as np
 		df.loc[df['column_name'].isin(some_values)]
 		df.loc[~df['column_name'].isin(some_values)]
 		df.loc[df['B'].isin(['one','three'])]
-
 
 		# Comparing previous row values
 			df['match'] = df.col1 == df.col1.shift()
@@ -641,6 +785,16 @@ import numpy as np
 			pd.cut(df["Metascore"], bins = [0, 25, 50, 75, 99]).head() # Using cut you can specify the bin edges
 			pd.qcut(df["Metascore"], q = 3).head() # specify the number of bins
 			pd.qcut(df["Metascore"], q = 4, labels = ["awful", "bad", "average", "good"]).head() # cut and qcut accept label bin size
+
+		# most often occuring names using collection.Counter
+			from collections import Counter
+			cheese = ["gouda", "brie", "feta", "cream cheese", "feta", "cheddar",
+					"parmesan", "parmesan", "cheddar", "mozzarella", "cheddar", "gouda",
+					"parmesan", "camembert", "emmental", "camembert", "parmesan"]
+			cheese_count = Counter(cheese) # Counter is just a dictionary that maps items to number of occurrences
+			# use update(more_words) method to easily add more elements to counter
+			print(cheese_count.most_common(3)) # Prints: [('parmesan', 4), ('cheddar', 3), ('gouda', 2)]
+
 
 
 # Example of filtering the dataframe --------------------------------------------------------------------------------------

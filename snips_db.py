@@ -471,6 +471,23 @@
         with open(filename) as f:
             return collections.deque(f, n)
 
+    # get last date from Postgres DB
+        def fetch_last_day_mth(year_, conn):
+            """
+            return date of the last day of data we have for a given year in our Postgres DB. 
+            conn: a Postgres DB connection object
+            """  
+            cur = conn.cursor()
+            SQL =   """
+                    SELECT MAX(date_part('day', date_price)) FROM daily_data
+                    WHERE date_price BETWEEN '%s-12-01' AND '%s-12-31'
+                    """
+            cur.execute(SQL, [year_,year_])        
+            data = cur.fetchall()
+            cur.close()
+            last_day = int(data[0][0])
+            return last_day
+
 
 # Keep track of where your data is coming when you are using multiple sources
 
