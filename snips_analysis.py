@@ -100,7 +100,6 @@ import datetime
 			df.assign(Players = df["Players"].str.split(",")).explode("Players")
 
 
-
 # Importing data 
 		SPX500=pd.read_csv("D:\\Data\\tick_data\\tick_data_zorro\\SPX500_2015.csv")
 		SPY_TICK=pd.read_csv("D:\\Data\\tick_data\\SPY_TICK_TRADE.csv")
@@ -151,7 +150,6 @@ import datetime
 			spyder = spyderdat.loc[start:end]
 			stocks = stocks.join(spyder.loc[:, "Adj Close"])
 							.rename(columns={"Adj Close": "SPY"})
-
 
 
 # Analysing series -------------------------------------------------------
@@ -445,6 +443,11 @@ import datetime
 			df.add_prefix("1_")
 			df.add_suffix("_Z")
 
+			col_names = {"Positionsinhaber": "Holder",
+						"Emittent": "Issuer",
+						"Datum": "Date"}
+			df.rename(columns = col_names, inplace = True)
+
 
 		# different fillna for every column
 			df.fillna({	'temp':0,
@@ -473,6 +476,11 @@ import datetime
 
 				# Remove a column and store it as a separate series
 				meta = df.pop("Metascore").to_frame() 
+
+                # Delete empty columns
+                for column in df.columns:
+        			if pd.isnull(df[column]).all():
+		        		df=df.drop(column,1)
 
 			# delete rows
 				NQ100_small.drop('PYPL')

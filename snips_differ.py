@@ -464,3 +464,15 @@ print((product if b else subtract)(1, 1))
     return fn(*args)
 
     delay(lambda x: print(x),1000,'later') # prints 'later' after one second
+
+
+# ------------------------------------------------------------------
+#Read tokes 
+import os
+from configparser import ConfigParser
+
+Path_To_TKNS = os.path.join(os.path.abspath(os.path.join(__file__ ,"../../..")), "connections.cfg")
+config = ConfigParser()
+config.read(Path_To_TKNS)
+token=config['FinnHub']['access_token']
+
